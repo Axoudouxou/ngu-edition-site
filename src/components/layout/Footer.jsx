@@ -43,7 +43,7 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.jpg" alt="NGU" className="w-8 h-8 rounded-full object-cover" />
+            <img src="/logo.jpg" alt="NGU" className="h-9 w-auto object-contain rounded-sm" />
             <p className="font-serif text-base font-semibold text-primary-foreground">Never Give Up Édition</p>
           </Link>
           <div className="flex items-center gap-2">

@@ -23,7 +23,7 @@ export default function Navbar() {
           <img
             src="/logo.jpg"
             alt="Never Give Up Édition"
-            className="h-9 w-9 rounded-full object-cover"
+            className="h-11 w-auto object-contain rounded-sm"
           />
         </Link>
 

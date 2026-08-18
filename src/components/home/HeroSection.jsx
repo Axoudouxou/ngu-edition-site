@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useSiteContent } from '@/hooks/useSiteContent';
+import HeroDoorsIntro from './HeroDoorsIntro';
 
 const COVER_1 = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/09a57da28_image.png';
 const COVER_2 = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/f65254426_image.png';
@@ -11,6 +12,8 @@ export default function HeroSection() {
   const content = useSiteContent();
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background pt-24 pb-16 px-6">
+
+      <HeroDoorsIntro coverSrc1={COVER_1} coverSrc2={COVER_2} />
 
       {/* ── Top text block ── */}
       <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
