@@ -21,7 +21,7 @@ export default function CGV() {
         <p>Les ebooks ne peuvent faire l'objet d'un droit de rétractation une fois téléchargés. Pour les livres physiques, vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation.</p>
 
         <h2 className="font-serif text-xl font-semibold text-foreground">6. Contact</h2>
-        <p>Pour toute question, contactez-nous à nevergiveupedt@gmail.com ou au +225 07 03 82 92 89.</p>
+        <p>Pour toute question, contactez-nous à edition@nguedition.com ou au +225 07 03 82 92 89.</p>
       </div>
     </div>
   );

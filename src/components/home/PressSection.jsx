@@ -1,13 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Quote } from 'lucide-react';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
-const pressLinks = [
+const DEFAULT_PRESS_LINKS = [
   { name: 'Fratmat.info', url: 'https://www.fratmat.info/article/2633756' },
   { name: "L'Infodrome", url: 'https://www.linfodrome.com/societe/109046-litterature-sohan-adou-devoile-son-parcours-dans-si-j-avais-su-a-16-ans' },
 ];
 
+function parseList(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 export default function PressSection() {
+  const content = useSiteContent();
+  const pressLinks = parseList(content.home_press_links, DEFAULT_PRESS_LINKS);
+  const quoteText = content.home_press_quote_text || "En lisant le livre d'un confrère ivoirien nommé Sohan Adou, une inspiration m'est venue à l'esprit.";
+  const quoteAuthor = content.home_press_quote_author || '@collinetbrz, créateur de contenu';
+
   return (
     <section className="py-24 bg-muted/30 border-y border-border/40">
       <div className="max-w-5xl mx-auto px-6">
@@ -22,7 +38,6 @@ export default function PressSection() {
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-primary">Ils parlent de nous</h2>
         </motion.div>
 
-        {/* Logos presse */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -44,7 +59,6 @@ export default function PressSection() {
           ))}
         </motion.div>
 
-        {/* Citation encadrée */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,9 +68,9 @@ export default function PressSection() {
         >
           <Quote className="w-8 h-8 text-secondary/60 mx-auto mb-4" />
           <p className="font-serif text-xl italic text-foreground/75 leading-relaxed">
-            "En lisant le livre d'un confrère ivoirien nommé Sohan Adou, une inspiration m'est venue à l'esprit."
+            "{quoteText}"
           </p>
-          <p className="mt-5 text-sm font-semibold text-accent">— @collinetbrz, créateur de contenu</p>
+          <p className="mt-5 text-sm font-semibold text-accent">— {quoteAuthor}</p>
         </motion.div>
       </div>
     </section>

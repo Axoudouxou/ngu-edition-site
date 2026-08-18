@@ -4,7 +4,7 @@ import { X, Truck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { initiateWavePayment } from '@/lib/wavePayment';
+import { initiateJekoPayment } from '@/lib/jekoPayment';
 
 const COUNTRY_CODES = [
   { code: '+225', label: '🇨🇮 +225' },
@@ -27,6 +27,7 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
     cgv: false,
   });
   const [errors, setErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState('wave');
 
   const set = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -53,15 +54,16 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setPaying(true);
     try {
-      await initiateWavePayment({
+      await initiateJekoPayment({
         amount: priceFCFA,
         bookId: book.id,
         formatId: format?.id,
         title: book.title,
+        paymentMethod,
       });
     } catch (_) {
       setPaying(false);
-      alert('Impossible de lancer le paiement Wave. Réessayez.');
+      alert('Impossible de lancer le paiement. Réessayez.');
     }
   };
 
@@ -173,6 +175,33 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
                       </div>
                     </div>
 
+                    {/* Moyen de paiement */}
+                    <div className="space-y-2">
+                      <Label className="text-xs uppercase tracking-wide">Moyen de paiement</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { id: 'wave', label: 'Wave' },
+                          { id: 'orange', label: 'Orange Money' },
+                          { id: 'mtn', label: 'MTN' },
+                          { id: 'moov', label: 'Moov' },
+                          { id: 'djamo', label: 'Djamo' },
+                        ].map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setPaymentMethod(m.id)}
+                            className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                              paymentMethod === m.id
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-white border-border text-foreground/70 hover:border-primary/50'
+                            }`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* CGV */}
                     <div className="pt-1">
                       <label className="flex items-start gap-3 cursor-pointer">
@@ -199,12 +228,12 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
                       className="w-full bg-accent hover:bg-accent/90 text-white font-semibold rounded-full py-6 gap-2 mt-2 disabled:opacity-60"
                     >
                       {paying
-                        ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers Wave…</>
+                        ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers le paiement…</>
                         : <><Truck className="w-5 h-5" /> Payer {priceFCFA.toLocaleString('fr-FR')} FCFA</>}
                     </Button>
 
                     <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
-                      🔒 Paiement sécurisé par Wave
+                      🔒 Paiement sécurisé
                     </p>
                   </form>
               </>

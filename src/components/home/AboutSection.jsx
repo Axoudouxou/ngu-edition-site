@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const LOGO_URL = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/b51e7226e_image.png';
+const LOGO_URL = '/logo.jpg';
 
 export default function AboutSection() {
   return (

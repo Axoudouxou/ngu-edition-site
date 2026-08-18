@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -16,23 +17,35 @@ const navLinks = [
   { label: 'Mentions légales', to: '/mentions-legales' },
   { label: 'Confidentialité', to: '/confidentialite' },
   { label: 'CGV', to: '/cgv' },
+  { label: 'CGU', to: '/cgu' },
+  { label: 'Remboursement', to: '/politique-remboursement' },
+  { label: 'Livraison', to: '/politique-livraison' },
   { label: 'Admin', to: '/admin' },
 ];
 
-const socials = [
-  { label: 'WhatsApp', href: 'https://wa.me/2250703829289', icon: <WhatsAppIcon /> },
-  { label: 'Instagram', href: 'https://www.instagram.com/nevergiveupedt', icon: <Instagram className="w-4 h-4" /> },
-  { label: 'Facebook', href: 'https://www.facebook.com/people/Never-Give-Up-Edition/61583814721195/?mibextid=wwXIfr', icon: <Facebook className="w-4 h-4" /> },
-];
-
 export default function Footer() {
+  const content = useSiteContent();
+  const email = content.contact_email || 'edition@nguedition.com';
+  const phoneDisplay = content.contact_phone_display || '+225 07 03 82 92 89';
+  const whatsappUrl = content.contact_whatsapp_url || 'https://wa.me/2250703829289';
+  const instagramUrl = content.instagram_url || 'https://www.instagram.com/nevergiveupedt';
+  const facebookUrl = content.facebook_url || 'https://www.facebook.com/people/Never-Give-Up-Edition/61583814721195/?mibextid=wwXIfr';
+
+  const socials = [
+    { label: 'WhatsApp', href: whatsappUrl, icon: <WhatsAppIcon /> },
+    { label: 'Instagram', href: instagramUrl, icon: <Instagram className="w-4 h-4" /> },
+    { label: 'Facebook', href: facebookUrl, icon: <Facebook className="w-4 h-4" /> },
+  ];
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="max-w-5xl mx-auto px-8 py-6">
 
-        {/* ── Row 1 : Brand + socials ── */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-          <p className="font-serif text-base font-semibold text-primary-foreground">Never Give Up Édition</p>
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.jpg" alt="NGU" className="w-8 h-8 rounded-full object-cover" />
+            <p className="font-serif text-base font-semibold text-primary-foreground">Never Give Up Édition</p>
+          </Link>
           <div className="flex items-center gap-2">
             {socials.map((s) => (
               <a
@@ -49,7 +62,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* ── Row 2 : Nav links inline ── */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
           {navLinks.map((link) => (
             <Link
@@ -61,15 +73,14 @@ export default function Footer() {
             </Link>
           ))}
           <span className="text-primary-foreground/20 text-xs">·</span>
-          <a href="mailto:nevergiveupedt@gmail.com" className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
-            <Mail className="w-3 h-3" /> nevergiveupedt@gmail.com
+          <a href={`mailto:${email}`} className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
+            <Mail className="w-3 h-3" /> {email}
           </a>
-          <a href="https://wa.me/2250703829289" target="_blank" rel="noopener noreferrer" className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
-            <Phone className="w-3 h-3" /> +225 07 03 82 92 89
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
+            <Phone className="w-3 h-3" /> {phoneDisplay}
           </a>
         </div>
 
-        {/* ── Row 3 : Copyright ── */}
         <div className="border-t border-primary-foreground/10 pt-3 text-center">
           <p className="text-xs text-primary-foreground/30">
             © {new Date().getFullYear()} Never Give Up Édition. Tous droits réservés.

@@ -21,9 +21,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
           <img
-            src="https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/b51e7226e_image.png"
+            src="/logo.jpg"
             alt="Never Give Up Édition"
-            className="h-9 w-auto object-contain"
+            className="h-9 w-9 rounded-full object-cover"
           />
         </Link>
 

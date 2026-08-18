@@ -8,7 +8,7 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft, Download, Loader2 } from '
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { getBookByFormatId } from '@/lib/books';
-import { initiateWavePayment } from '@/lib/wavePayment';
+import { initiateJekoPayment } from '@/lib/jekoPayment';
 
 const COUNTRY_CODES = [
   { code: '+225', label: '🇨🇮 +225' },
@@ -38,6 +38,7 @@ export default function Cart() {
     cgv: false,
   });
   const [errors, setErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState('wave');
 
   const hasEbooksOnly = items.every(i => i.category === 'ebook');
   const hasPhysical = items.some(i => i.category === 'physique');
@@ -80,15 +81,17 @@ export default function Cart() {
     setPaying(true);
     try {
       const firstItem = items[0];
-      await initiateWavePayment({
+      await initiateJekoPayment({
         amount: fcfaTotal,
         bookId: firstItem?.id?.replace(/-ebook$|-physique$/, '') || '',
         formatId: items.map(i => i.id).join(','),
         title: items.map(i => i.title).join(', '),
+        customerEmail: form.email || '',
+        paymentMethod,
       });
     } catch (_) {
       setPaying(false);
-      alert('Impossible de lancer le paiement Wave. Réessayez.');
+      alert('Impossible de lancer le paiement. Réessayez.');
     }
   };
 
@@ -232,6 +235,32 @@ export default function Cart() {
           </>
         )}
 
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-wide">Moyen de paiement</Label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'wave', label: 'Wave' },
+              { id: 'orange', label: 'Orange Money' },
+              { id: 'mtn', label: 'MTN' },
+              { id: 'moov', label: 'Moov' },
+              { id: 'djamo', label: 'Djamo' },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setPaymentMethod(m.id)}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                  paymentMethod === m.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-white border-border text-foreground/70 hover:border-primary/50'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="pt-1">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -257,12 +286,12 @@ export default function Cart() {
           className="w-full bg-accent hover:bg-accent/90 text-white font-semibold rounded-full py-6 gap-2 mt-2 disabled:opacity-60"
         >
           {paying
-            ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers Wave…</>
+            ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers le paiement…</>
             : <><Download className="w-5 h-5" /> Payer {fcfaTotal.toLocaleString('fr-FR')} FCFA</>}
         </Button>
 
         <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
-          🔒 Paiement sécurisé par Wave
+          🔒 Paiement sécurisé
         </p>
       </form>
     </div>

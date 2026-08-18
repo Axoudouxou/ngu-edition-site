@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle, Mail, Truck, Loader2, RefreshCw, Download, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { checkPayment, getOrderContext, clearOrderContext } from '@/lib/wavePayment';
+import { checkPayment, getOrderContext, clearOrderContext } from '@/lib/jekoPayment';
 import { getEbookSignedLink } from '@/lib/ebookDelivery';
 
 export default function PaymentSuccess() {

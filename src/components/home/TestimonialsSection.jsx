@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
-const testimonials = [
+const DEFAULT_TESTIMONIALS = [
   {
     text: "Votre livre est devenu un refuge. Un espace où je me retrouve et où je parviens à me libérer.",
     author: 'Khady Yasmine B.',
@@ -16,7 +17,20 @@ const testimonials = [
   },
 ];
 
+function parseList(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 export default function TestimonialsSection() {
+  const content = useSiteContent();
+  const testimonials = parseList(content.home_testimonials, DEFAULT_TESTIMONIALS);
+
   return (
     <section className="py-24 bg-background border-t border-border/40">
       <div className="max-w-6xl mx-auto px-6">
@@ -41,7 +55,6 @@ export default function TestimonialsSection() {
               transition={{ duration: 0.55, delay: i * 0.12 }}
               className="relative bg-white border border-border/50 rounded-2xl px-8 py-10 shadow-sm flex flex-col"
             >
-              {/* Guillemet stylisé */}
               <span className="font-serif text-7xl leading-none text-secondary/40 absolute -top-2 left-6 select-none">"</span>
               <p className="font-serif text-lg italic text-foreground/75 leading-relaxed mt-6 flex-1">
                 {t.text}

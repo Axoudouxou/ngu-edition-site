@@ -8,7 +8,7 @@ export default function MentionsLegales() {
         <p><strong>Éditeur :</strong> Never Give Up Édition</p>
         <p><strong>Siège social :</strong> Abidjan, Côte d'Ivoire</p>
         <p><strong>Responsable de publication :</strong> Sohan Adou</p>
-        <p><strong>Email :</strong> nevergiveupedt@gmail.com</p>
+        <p><strong>Email :</strong> edition@nguedition.com</p>
         <p><strong>Téléphone :</strong> +225 07 03 82 92 89</p>
         <p>Le présent site est édité par Never Give Up Édition. Toute reproduction totale ou partielle du contenu de ce site est interdite sans autorisation préalable.</p>
       </div>

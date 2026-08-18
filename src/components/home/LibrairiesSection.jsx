@@ -1,22 +1,34 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
-const librairies = [
+const DEFAULT_LIBRAIRIES = [
   { name: 'Librairie Mont Carmel', address: 'Abidjan' },
   { name: 'FNAC Cap Nord', address: 'Cap Nord Mall, Abidjan' },
   { name: 'FNAC Cap Sud', address: 'Cap Sud Mall, Abidjan' },
 ];
 
-// Embed centré sur Abidjan avec les 3 points
 const MAP_EMBED = 'https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d63526.31!2d-4.0305!3d5.3599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sFNAC%20Cap%20Nord%20Abidjan%7CFNAC%20Cap%20Sud%20Abidjan%7CLibrairie%20Mont%20Carmel%20Abidjan!5e0!3m2!1sfr!2sci!4v1680000000000!5m2!1sfr!2sci';
 
+function parseList(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 export default function LibrairiesSection() {
+  const content = useSiteContent();
+  const librairies = parseList(content.home_librairies, DEFAULT_LIBRAIRIES);
+
   return (
     <section className="bg-muted/40 py-20 md:py-28 border-t border-border/40">
       <div className="max-w-5xl mx-auto px-6">
 
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -31,7 +43,6 @@ export default function LibrairiesSection() {
           <p className="font-serif text-lg italic text-muted-foreground">Disponibles dans ces librairies</p>
         </motion.div>
 
-        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
           {librairies.map((lib, i) => (
             <motion.div
@@ -53,7 +64,6 @@ export default function LibrairiesSection() {
           ))}
         </div>
 
-        {/* Map */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

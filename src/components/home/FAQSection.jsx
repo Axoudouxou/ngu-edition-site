@@ -5,8 +5,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
-const faqs = [
+const DEFAULT_FAQS = [
   {
     question: 'Vous livrez où ?',
     answer: 'Nous livrons dans le monde entier. Nos livres sont aussi disponibles en librairie à la FNAC Cap Sud et FNAC Cap Nord à Abidjan.',
@@ -21,11 +22,24 @@ const faqs = [
   },
   {
     question: 'Comment nous contacter ?',
-    answer: 'Par email à nevergiveupedt@gmail.com ou WhatsApp au +225 07 03 82 92 89.',
+    answer: 'Par email à edition@nguedition.com ou WhatsApp au +225 07 03 82 92 89.',
   },
 ];
 
+function parseList(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 export default function FAQSection() {
+  const content = useSiteContent();
+  const faqs = parseList(content.home_faq, DEFAULT_FAQS);
+
   return (
     <section className="bg-muted/40 border-t border-border/40 py-20">
       <div className="max-w-2xl mx-auto px-6">

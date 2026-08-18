@@ -2,6 +2,7 @@ import React from 'react';
 import { Mail, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TallyEmbed from '@/components/TallyEmbed';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -9,13 +10,20 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const socials = [
-  { label: 'WhatsApp', href: 'https://wa.me/2250703829289', icon: <WhatsAppIcon /> },
-  { label: 'Instagram', href: 'https://www.instagram.com/nevergiveupedt', icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.266.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.265-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/></svg> },
-  { label: 'Facebook', href: 'https://www.facebook.com/people/Never-Give-Up-Edition/61583814721195/?mibextid=wwXIfr', icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
-];
-
 export default function Contact() {
+  const content = useSiteContent();
+  const email = content.contact_email || 'edition@nguedition.com';
+  const phoneDisplay = content.contact_phone_display || '+225 07 03 82 92 89';
+  const whatsappUrl = content.contact_whatsapp_url || 'https://wa.me/2250703829289';
+  const instagramUrl = content.instagram_url || 'https://www.instagram.com/nevergiveupedt';
+  const facebookUrl = content.facebook_url || 'https://www.facebook.com/people/Never-Give-Up-Edition/61583814721195/?mibextid=wwXIfr';
+
+  const socials = [
+    { label: 'WhatsApp', href: whatsappUrl, icon: <WhatsAppIcon /> },
+    { label: 'Instagram', href: instagramUrl, icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.266.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.265-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/></svg> },
+    { label: 'Facebook', href: facebookUrl, icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
+  ];
+
   return (
     <div className="bg-background">
       {/* Header */}
@@ -54,17 +62,17 @@ export default function Contact() {
             <div className="mb-12">
               <h2 className="font-serif text-2xl font-semibold text-primary mb-6">Nos coordonnées</h2>
               <div className="space-y-4">
-                <a href="mailto:nevergiveupedt@gmail.com" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                <a href={`mailto:${email}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
                   <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                     <Mail className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <span className="text-foreground/70">nevergiveupedt@gmail.com</span>
+                  <span className="text-foreground/70">{email}</span>
                 </a>
-                <a href="https://wa.me/2250703829289" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
                   <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                     <Phone className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <span className="text-foreground/70">+225 07 03 82 92 89</span>
+                  <span className="text-foreground/70">{phoneDisplay}</span>
                 </a>
               </div>
             </div>

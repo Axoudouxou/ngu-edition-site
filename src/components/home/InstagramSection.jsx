@@ -1,8 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram } from 'lucide-react';
+import { useSiteContent } from '@/hooks/useSiteContent';
 
 export default function InstagramSection() {
+  const content = useSiteContent();
+  const instagramUrl = content.instagram_url || 'https://www.instagram.com/nevergiveupedt';
+  const instagramHandle = content.instagram_handle || '@nevergiveupedt';
+
   return (
     <section className="py-24 bg-background border-t border-border/40">
       <div className="max-w-3xl mx-auto px-6 text-center">
@@ -20,13 +25,13 @@ export default function InstagramSection() {
             Suivez nos actualités, découvrez les coulisses et rejoignez une communauté de lecteurs inspirés.
           </p>
           <a
-            href="https://www.instagram.com/nevergiveupedt"
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-accent text-white font-semibold text-base px-9 py-4 rounded-full hover:bg-accent/90 transition-colors duration-200"
           >
             <Instagram className="w-5 h-5" />
-            @nevergiveupedt
+            {instagramHandle}
           </a>
         </motion.div>
       </div>

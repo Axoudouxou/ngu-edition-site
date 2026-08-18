@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { Quote } from 'lucide-react';
 
-const LOGO_URL = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/b51e7226e_image.png';
+const LOGO_URL = '/logo.jpg';
 
 export default function AuthorSection() {
   const { ref, isVisible } = useScrollAnimation();

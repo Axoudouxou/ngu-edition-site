@@ -16,6 +16,9 @@ import Contact from '@/pages/Contact';
 import MentionsLegales from '@/pages/MentionsLegales';
 import Confidentialite from '@/pages/Confidentialite';
 import CGV from '@/pages/CGV';
+import CGU from '@/pages/CGU';
+import PolitiqueRemboursement from '@/pages/PolitiqueRemboursement';
+import PolitiqueLivraison from '@/pages/PolitiqueLivraison';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
 import AdminStock from '@/pages/AdminStock';
@@ -40,6 +43,9 @@ function App() {
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
               <Route path="/cgv" element={<CGV />} />
+              <Route path="/cgu" element={<CGU />} />
+              <Route path="/politique-remboursement" element={<PolitiqueRemboursement />} />
+              <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
               <Route path="/paiement-succes" element={<PaymentSuccess />} />
               <Route path="/paiement-echec" element={<PaymentFailed />} />
               <Route path="/admin" element={<AdminDashboard />} />

@@ -4,7 +4,7 @@ import { useBooks } from '@/hooks/useBooks';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, Download, Truck, CheckCircle, Star, Loader2 } from 'lucide-react';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
-import { initiateWavePayment } from '@/lib/wavePayment';
+import { initiateJekoPayment } from '@/lib/jekoPayment';
 import { useToast } from '@/components/ui/use-toast';
 import PhysicalCheckoutDrawer from '@/components/checkout/PhysicalCheckoutDrawer';
 
@@ -26,6 +26,9 @@ export default function BookDetail() {
   const { region, setManualOverride } = useGeoRegion();
   const { toast } = useToast();
   const [paying, setPaying] = useState(false);
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('wave');
 
   const isAfrica = region === 'africa';
 
@@ -48,26 +51,37 @@ export default function BookDetail() {
   const isEbook = format.category === 'ebook';
   const fcfaPrice = isEbook ? book.ebookPriceFCFA : book.physiquePriceFCFA;
 
-  const displayPrice = isAfrica
+  // Ebooks: JEKO payment everywhere in the world. Physical books: JEKO+drawer in
+  // Africa, Amazon link for the rest of the world.
+  const showWave = isEbook || isAfrica;
+  const displayPrice = showWave
     ? `${fcfaPrice.toLocaleString('fr-FR')} FCFA`
     : null;
 
   const handleWavePurchase = async () => {
+    if (isEbook) {
+      if (!customerEmail.trim() || !customerEmail.includes('@')) {
+        setEmailError('Merci de renseigner une adresse email valide.');
+        return;
+      }
+      setEmailError('');
+    }
     try {
       setPaying(true);
-      await initiateWavePayment({
+      await initiateJekoPayment({
         amount: fcfaPrice,
         bookId: book.id,
         formatId: format.id,
         title: book.title,
+        customerEmail: isEbook ? customerEmail.trim() : '',
+        paymentMethod,
       });
-      // initiateWavePayment redirects to Wave; reaching here means redirect didn't happen
       setPaying(false);
-    } catch (_) {
+    } catch (err) {
       setPaying(false);
       toast({
         title: 'Erreur',
-        description: 'Impossible de lancer le paiement Wave. Réessayez.',
+        description: err?.message || 'Impossible de lancer le paiement. Réessayez.',
         variant: 'destructive',
       });
     }
@@ -171,30 +185,53 @@ export default function BookDetail() {
 
           {/* CTA */}
           <div className="space-y-3">
-            {/* Ebook Afrique → Paiement Wave */}
-            {isEbook && isAfrica && (
-              <button
-                onClick={handleWavePurchase}
-                disabled={paying}
-                className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-accent text-white font-semibold text-base px-10 py-4 rounded-full w-full md:w-auto disabled:opacity-60"
-              >
-                {paying
-                  ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers Wave…</>
-                  : <><Download className="w-5 h-5" /> Acheter</>}
-              </button>
-            )}
-
-            {/* Ebook Monde → Amazon */}
-            {isEbook && !isAfrica && (
-              <a
-                href={book.amazonUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-accent text-white font-semibold text-base px-10 py-4 rounded-full w-full md:w-auto"
-              >
-                <span className="absolute inset-0 -skew-x-12 translate-x-[-200%] hover:translate-x-[200%] transition-transform duration-700 bg-white/20 pointer-events-none" />
-                <Download className="w-5 h-5" /> Acheter sur Amazon
-              </a>
+            {isEbook && (
+              <>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Moyen de paiement</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'wave', label: 'Wave' },
+                      { id: 'orange', label: 'Orange Money' },
+                      { id: 'mtn', label: 'MTN' },
+                      { id: 'moov', label: 'Moov' },
+                      { id: 'djamo', label: 'Djamo' },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(m.id)}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                          paymentMethod === m.id
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-white border-border text-foreground/70 hover:border-primary/50'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <input
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => { setCustomerEmail(e.target.value); setEmailError(''); }}
+                    placeholder="Votre adresse email (pour recevoir l'ebook)"
+                    className={`w-full h-11 rounded-full border px-5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring ${emailError ? 'border-destructive' : 'border-border'}`}
+                  />
+                  {emailError && <p className="text-xs text-destructive px-2">{emailError}</p>}
+                </div>
+                <button
+                  onClick={handleWavePurchase}
+                  disabled={paying}
+                  className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-accent text-white font-semibold text-base px-10 py-4 rounded-full w-full md:w-auto disabled:opacity-60"
+                >
+                  {paying
+                    ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirection vers le paiement…</>
+                    : <><Download className="w-5 h-5" /> Acheter</>}
+                </button>
+              </>
             )}
 
             {/* Physique Afrique → Drawer commande */}
