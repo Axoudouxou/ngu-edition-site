@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Loader2, CheckCircle, Plus, Trash2 } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { isAdminLoggedIn, adminFetchJson } from '@/lib/adminAuth';
+import { isAdminLoggedIn, adminFetchJson, adminFetch } from '@/lib/adminAuth';
 
 const KNOWN_KEYS = [
   { key: 'home_hero_eyebrow', label: 'Accueil — petit texte au-dessus du titre', section: 'Accueil' },
@@ -13,8 +13,8 @@ const KNOWN_KEYS = [
   { key: 'about_title', label: 'Notre histoire — titre', section: 'Notre histoire' },
   { key: 'about_tagline', label: 'Notre histoire — accroche', section: 'Notre histoire' },
   { key: 'about_founder_bio', label: 'Notre histoire — biographie du fondateur', section: 'Notre histoire' },
-  { key: 'about_vision_text', label: 'Notre histoire — texte "Vision"', section: 'Notre histoire' },
-  { key: 'about_mission_text', label: 'Notre histoire — texte "Mission"', section: 'Notre histoire' },
+  { key: 'about_vision_text', label: 'Notre engagement — texte "Vision"', section: 'Notre engagement' },
+  { key: 'about_mission_text', label: 'Notre engagement — texte "Mission"', section: 'Notre engagement' },
   { key: 'contact_email', label: 'Email de contact', section: 'Coordonnées' },
   { key: 'contact_phone_display', label: 'Téléphone affiché (ex: +225 07 03 82 92 89)', section: 'Coordonnées' },
   { key: 'contact_whatsapp_url', label: 'Lien WhatsApp (ex: https://wa.me/225...)', section: 'Coordonnées' },
@@ -68,6 +68,8 @@ export default function AdminContent() {
   const [lists, setLists] = useState({});
   const [saving, setSaving] = useState(null);
   const [savedKey, setSavedKey] = useState('');
+  const [uploadingIndex, setUploadingIndex] = useState(null);
+  const [events, setEvents] = useState([]);
 
   const load = async () => {
     const rows = await adminFetchJson('/api/admin/content');
@@ -77,6 +79,7 @@ export default function AdminContent() {
     const listMap = {};
     LIST_CONFIGS.forEach(cfg => { listMap[cfg.key] = parseList(map[cfg.key]); });
     setLists(listMap);
+    setEvents(parseList(map.engagement_events));
   };
 
   useEffect(() => {
@@ -128,6 +131,57 @@ export default function AdminContent() {
 
   const removeListItem = (listKey, index) => {
     setLists(prev => ({ ...prev, [listKey]: prev[listKey].filter((_, i) => i !== index) }));
+  };
+
+  const saveEvents = async (nextEvents) => {
+    setSaving('engagement_events');
+    try {
+      await adminFetchJson('/api/admin/content', {
+        method: 'POST',
+        body: JSON.stringify({ key: 'engagement_events', value: JSON.stringify(nextEvents), label: 'Photos événements', section: 'listes' }),
+      });
+      setSavedKey('engagement_events');
+      setTimeout(() => setSavedKey(''), 2000);
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const addEventPhoto = () => {
+    setEvents(prev => [...prev, { image_url: '', caption: '' }]);
+  };
+
+  const updateEventCaption = (index, caption) => {
+    setEvents(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], caption };
+      return next;
+    });
+  };
+
+  const removeEventPhoto = (index) => {
+    const next = events.filter((_, i) => i !== index);
+    setEvents(next);
+    saveEvents(next);
+  };
+
+  const uploadEventPhoto = async (index, file) => {
+    setUploadingIndex(index);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await adminFetch('/api/admin/upload-event-photo', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('upload failed');
+      const data = await res.json();
+      const next = [...events];
+      next[index] = { ...next[index], image_url: data.url };
+      setEvents(next);
+      await saveEvents(next);
+    } catch (_) {
+      alert("Échec de l'upload de la photo. Réessaie.");
+    } finally {
+      setUploadingIndex(null);
+    }
   };
 
   const sections = [...new Set(KNOWN_KEYS.map(k => k.section))];
@@ -240,6 +294,58 @@ export default function AdminContent() {
           </div>
         </div>
       ))}
+
+      {/* Photos événements */}
+      <div className="mb-12">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-accent mb-4">Photos événements (page "Notre engagement")</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+          {events.map((ev, i) => (
+            <div key={i} className="bg-white border border-border/50 rounded-xl p-3 space-y-2">
+              <div className="aspect-square rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                {ev.image_url ? (
+                  <img src={ev.image_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs text-muted-foreground">Aucune photo</span>
+                )}
+              </div>
+              <label className="block">
+                <span className="inline-flex items-center justify-center w-full text-xs font-medium text-accent border border-accent/40 rounded-full py-1.5 cursor-pointer hover:bg-accent/5">
+                  {uploadingIndex === i ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (ev.image_url ? 'Remplacer' : 'Choisir une photo')}
+                </span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => { if (e.target.files?.[0]) uploadEventPhoto(i, e.target.files[0]); }}
+                />
+              </label>
+              <Input
+                value={ev.caption || ''}
+                onChange={(e) => updateEventCaption(i, e.target.value)}
+                onBlur={() => saveEvents(events)}
+                placeholder="Légende (ex: Dédicace, mars 2026)"
+                className="text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => removeEventPhoto(i)}
+                className="inline-flex items-center gap-1 text-xs text-destructive/70 hover:text-destructive"
+              >
+                <Trash2 className="w-3 h-3" /> Retirer
+              </button>
+            </div>
+          ))}
+        </div>
+        {events.length === 0 && (
+          <p className="text-sm text-muted-foreground italic mb-3">Aucune photo pour l'instant.</p>
+        )}
+        <div className="flex items-center gap-3">
+          <Button type="button" variant="outline" size="sm" onClick={addEventPhoto} className="gap-2 rounded-full">
+            <Plus className="w-3.5 h-3.5" /> Ajouter une photo
+          </Button>
+          {savedKey === 'engagement_events' && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Enregistré</span>}
+        </div>
+      </div>
     </div>
   );
 }

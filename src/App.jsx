@@ -12,6 +12,7 @@ import BookDetail from '@/pages/BookDetail';
 
 import Cart from '@/pages/Cart';
 import NotreHistoire from '@/pages/NotreHistoire';
+import NotreEngagement from '@/pages/NotreEngagement';
 import Contact from '@/pages/Contact';
 import MentionsLegales from '@/pages/MentionsLegales';
 import Confidentialite from '@/pages/Confidentialite';
@@ -39,6 +40,7 @@ function App() {
               <Route path="/livre/:id" element={<BookDetail />} />
               <Route path="/panier" element={<Cart />} />
               <Route path="/notre-histoire" element={<NotreHistoire />} />
+              <Route path="/notre-engagement" element={<NotreEngagement />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/confidentialite" element={<Confidentialite />} />

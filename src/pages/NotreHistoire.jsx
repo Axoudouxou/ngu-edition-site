@@ -77,51 +77,6 @@ export default function NotreHistoire() {
         </div>
       </section>
 
-      {/* ── 3. Mission & Vision ── */}
-      <section className="py-20 md:py-24 bg-muted/30 border-t border-border/40">
-        <div className="max-w-4xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12">
-            
-            <p className="text-accent text-xs font-semibold tracking-widest uppercase mb-3">Ce qui nous anime</p>
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-primary">Mission & Vision</h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-            {
-              title: 'Notre Vision',
-              text: content.about_vision_text || "Être un pionnier de l'innovation dans le secteur de la littérature.",
-              delay: 0
-            },
-            {
-              title: 'Notre Mission',
-              text: content.about_mission_text || 'Être l\'anteambulo de chaque créatif qui veut créer, publier et vivre de son art.',
-              delay: 0.12
-            }].
-            map((card) =>
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: card.delay }}
-              className="bg-primary rounded-2xl px-10 py-10 text-primary-foreground">
-              
-                <p className="text-secondary text-xs font-semibold tracking-widest uppercase mb-4">{card.title}</p>
-                <p className="font-serif text-xl md:text-2xl leading-relaxed">
-                  {card.text}
-                </p>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </section>
-
     </div>);
 
 }

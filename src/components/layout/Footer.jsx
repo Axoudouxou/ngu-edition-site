@@ -13,6 +13,7 @@ const navLinks = [
   { label: 'Accueil', to: '/' },
   { label: 'Boutique', to: '/boutique' },
   { label: 'Notre histoire', to: '/notre-histoire' },
+  { label: 'Notre engagement', to: '/notre-engagement' },
   { label: 'Contact', to: '/contact' },
   { label: 'Mentions légales', to: '/mentions-legales' },
   { label: 'Confidentialité', to: '/confidentialite' },
