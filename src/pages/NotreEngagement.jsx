@@ -96,26 +96,48 @@ export default function NotreEngagement() {
           {events.length === 0 ? (
             <p className="text-center text-muted-foreground italic">Les photos de nos prochains événements arrivent bientôt.</p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {events.map((ev, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: (i % 6) * 0.06 }}
-                  className="rounded-2xl overflow-hidden bg-white border border-border/50 shadow-sm"
-                >
-                  <div className="aspect-square bg-muted">
-                    {ev.image_url && (
-                      <img src={ev.image_url} alt={ev.caption || 'Événement NGU'} className="w-full h-full object-cover" />
+            <div className="relative overflow-hidden -mx-6 px-6" style={{ maskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)' }}>
+              <div
+                className="flex gap-5 w-max ngu-scroll-track"
+                style={{ animationDuration: `${Math.max(events.length * 6, 18)}s` }}
+              >
+                {[...events, ...events].map((ev, i) => (
+                  <div
+                    key={i}
+                    className="w-56 md:w-64 flex-shrink-0 rounded-2xl overflow-hidden bg-white border border-border/50 shadow-sm"
+                  >
+                    <div className="aspect-square bg-muted">
+                      {ev.image_url && (
+                        <img src={ev.image_url} alt={ev.caption || 'Événement NGU'} className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    {ev.caption && (
+                      <p className="text-xs text-foreground/70 px-3 py-2.5 text-center">{ev.caption}</p>
                     )}
                   </div>
-                  {ev.caption && (
-                    <p className="text-xs text-foreground/70 px-3 py-2.5 text-center">{ev.caption}</p>
-                  )}
-                </motion.div>
-              ))}
+                ))}
+              </div>
+
+              <style>{`
+                @keyframes ngu-scroll {
+                  from { transform: translateX(0); }
+                  to { transform: translateX(-50%); }
+                }
+                .ngu-scroll-track {
+                  animation-name: ngu-scroll;
+                  animation-timing-function: linear;
+                  animation-iteration-count: infinite;
+                }
+                .ngu-scroll-track:hover {
+                  animation-play-state: paused;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                  .ngu-scroll-track {
+                    animation: none;
+                    overflow-x: auto;
+                  }
+                }
+              `}</style>
             </div>
           )}
         </div>
