@@ -9,7 +9,7 @@ const DEFAULT_LIBRAIRIES = [
   { name: 'FNAC Cap Sud', address: 'Cap Sud Mall, Abidjan' },
 ];
 
-const MAP_EMBED = 'https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d63526.31!2d-4.0305!3d5.3599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sFNAC%20Cap%20Nord%20Abidjan%7CFNAC%20Cap%20Sud%20Abidjan%7CLibrairie%20Mont%20Carmel%20Abidjan!5e0!3m2!1sfr!2sci!4v1680000000000!5m2!1sfr!2sci';
+const MAP_EMBED = 'https://www.google.com/maps?q=Librairie+Mont+Carmel+Abidjan&output=embed';
 
 function parseList(value, fallback) {
   if (!value) return fallback;

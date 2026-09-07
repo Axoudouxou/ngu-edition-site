@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const TEXT = 'Livraison mondiale · Disponible à la FNAC Abidjan · Ebook téléchargement immédiat · Paiement sécurisé · ';
+const TEXT = 'Livraison mondiale · Ebook téléchargement immédiat · Paiement sécurisé · ';
 
 export default function AnnouncementBanner() {
   // Repeat text enough times to fill wide screens seamlessly
