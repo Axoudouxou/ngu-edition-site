@@ -21,7 +21,7 @@ const COUNTRY_CODES = [
 
 export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, priceFCFA }) {
   const [form, setForm] = useState({
-    first_name: '', last_name: '',
+    first_name: '', last_name: '', email: '',
     phone_code: '+225', phone_number: '',
     address: '', district: '', city: '', country: 'Côte d\'Ivoire',
     cgv: false,
@@ -38,6 +38,7 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
     const e = {};
     if (!form.first_name.trim()) e.first_name = 'Requis';
     if (!form.last_name.trim()) e.last_name = 'Requis';
+    if (!form.email.trim() || !form.email.includes('@')) e.email = 'Email valide requis';
     if (!form.phone_number.trim()) e.phone_number = 'Requis';
     if (!form.address.trim()) e.address = 'Requis';
     if (!form.city.trim()) e.city = 'Requis';
@@ -59,6 +60,7 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
         bookId: book.id,
         formatId: format?.id,
         title: book.title,
+        customerEmail: form.email.trim(),
         paymentMethod,
       });
     } catch (_) {
@@ -68,7 +70,7 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
   };
 
   const handleClose = () => {
-    setForm({ first_name: '', last_name: '', phone_code: '+225', phone_number: '', address: '', district: '', city: '', country: 'Côte d\'Ivoire', cgv: false });
+    setForm({ first_name: '', last_name: '', email: '', phone_code: '+225', phone_number: '', address: '', district: '', city: '', country: 'Côte d\'Ivoire', cgv: false });
     setErrors({});
     onClose();
   };
@@ -121,6 +123,13 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
                         <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Dupont" className={errors.last_name ? 'border-destructive' : ''} />
                         {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
                       </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-1.5">
+                      <Label className="text-sm">Adresse email</Label>
+                      <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="jean@exemple.com" className={errors.email ? 'border-destructive' : ''} />
+                      {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                     </div>
 
                     {/* WhatsApp */}
