@@ -58,6 +58,12 @@ export default function PaymentSuccess() {
     clearOrderContext();
   };
 
+  const orderCtx = getOrderContext();
+  const formatId = orderCtx?.formatId || '';
+  const knownType = formatId.includes('ebook') || formatId.includes('physique');
+  const isEbookOrder = !knownType || formatId.includes('ebook');
+  const isPhysicalOrder = !knownType || formatId.includes('physique');
+
   /* ── Checking ── */
   if (status === 'checking') {
     return (
@@ -156,7 +162,7 @@ export default function PaymentSuccess() {
           Merci pour votre achat. Votre commande a bien été confirmée.
         </p>
 
-        {downloadUrl && (
+        {isEbookOrder && downloadUrl && (
           <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-block mb-8">
             <Button className="bg-accent hover:bg-accent/90 text-white rounded-full px-8 py-6 gap-2 text-base font-semibold">
               <Download className="w-5 h-5" />
@@ -166,31 +172,35 @@ export default function PaymentSuccess() {
         )}
 
         <div className="space-y-3 mb-8 text-left">
-          <div className="bg-muted/40 rounded-2xl p-5 flex items-start gap-4">
-            <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-accent" />
+          {isEbookOrder && (
+            <div className="bg-muted/40 rounded-2xl p-5 flex items-start gap-4">
+              <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-accent" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm mb-1">Ebook commandé ?</p>
+                <p className="text-sm text-muted-foreground">
+                  {downloadUrl
+                    ? 'Votre lien de téléchargement est disponible ci-dessus. Un email de confirmation vous sera également envoyé.'
+                    : "Vous recevrez votre ebook par email dans les minutes qui suivent. Vérifiez vos spams."}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-foreground text-sm mb-1">Ebook commandé ?</p>
-              <p className="text-sm text-muted-foreground">
-                {downloadUrl
-                  ? 'Votre lien de téléchargement est disponible ci-dessus. Un email de confirmation vous sera également envoyé.'
-                  : "Vous recevrez votre ebook par email dans les minutes qui suivent. Vérifiez vos spams."}
-              </p>
-            </div>
-          </div>
+          )}
 
-          <div className="bg-muted/40 rounded-2xl p-5 flex items-start gap-4">
-            <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <Truck className="w-5 h-5 text-accent" />
+          {isPhysicalOrder && (
+            <div className="bg-muted/40 rounded-2xl p-5 flex items-start gap-4">
+              <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Truck className="w-5 h-5 text-accent" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm mb-1">Livre physique commandé ?</p>
+                <p className="text-sm text-muted-foreground">
+                  Notre équipe vous contacte sur WhatsApp sous <strong>24h</strong> pour organiser la livraison.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-foreground text-sm mb-1">Livre physique commandé ?</p>
-              <p className="text-sm text-muted-foreground">
-                Notre équipe vous contacte sur WhatsApp sous <strong>24h</strong> pour organiser la livraison.
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

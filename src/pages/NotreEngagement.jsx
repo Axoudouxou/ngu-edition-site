@@ -20,7 +20,7 @@ export default function NotreEngagement() {
     <div className="bg-background">
 
       {/* Hero */}
-      <section className="py-24 md:py-32 text-center border-b border-border/40">
+      <section className="py-14 md:py-16 text-center border-b border-border/40">
         <div className="max-w-3xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -37,7 +37,7 @@ export default function NotreEngagement() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-20 md:py-24">
+      <section className="py-14 md:py-16">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
