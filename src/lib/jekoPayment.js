@@ -34,10 +34,11 @@ export function clearOrderContext() {
 
 /**
  * Create a JEKO payment and redirect the customer to the JEKO checkout page.
- * @param {object} opts { amount, bookId, formatId, title, customerEmail, paymentMethod }
+ * @param {object} opts { amount, bookId, formatId, title, customerEmail, paymentMethod, delivery }
+ * delivery (livres physiques) : { first_name, last_name, phone, address, district, city, country }
  * paymentMethod: 'wave' | 'orange' | 'mtn' | 'moov' | 'djamo'
  */
-export async function initiateJekoPayment({ amount, bookId, formatId, title, customerEmail, paymentMethod }) {
+export async function initiateJekoPayment({ amount, bookId, formatId, title, customerEmail, paymentMethod, delivery }) {
   const reference = generateOrderReference();
   saveOrderContext({ reference, bookId, formatId, title, amount, customerEmail });
 
@@ -52,6 +53,7 @@ export async function initiateJekoPayment({ amount, bookId, formatId, title, cus
       format_id: formatId,
       customer_email: customerEmail || '',
       payment_method: paymentMethod || 'wave',
+      ...(delivery ? { delivery } : {}),
     }),
   });
 

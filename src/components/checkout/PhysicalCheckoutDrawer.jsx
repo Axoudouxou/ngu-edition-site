@@ -62,6 +62,15 @@ export default function PhysicalCheckoutDrawer({ isOpen, onClose, book, format, 
         title: book.title,
         customerEmail: form.email.trim(),
         paymentMethod,
+        delivery: {
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          phone: `${form.phone_code} ${form.phone_number}`.trim(),
+          address: form.address.trim(),
+          district: form.district.trim(),
+          city: form.city.trim(),
+          country: form.country.trim(),
+        },
       });
     } catch (_) {
       setPaying(false);

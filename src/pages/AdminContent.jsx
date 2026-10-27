@@ -7,11 +7,11 @@ import { Label } from '@/components/ui/label';
 import { isAdminLoggedIn, adminFetchJson, adminFetch } from '@/lib/adminAuth';
 
 const KNOWN_KEYS = [
-  { key: 'home_signature', label: 'Accueil — signature (grand titre)', section: 'Accueil' },
-  { key: 'home_signature_subtitle', label: 'Accueil — sous-titre', section: 'Accueil' },
-  { key: 'home_maison_text', label: 'Accueil — texte « La maison »', section: 'Accueil' },
-  { key: 'boutique_eyebrow', label: 'Boutique — petit texte au-dessus du titre', section: 'Boutique' },
-  { key: 'boutique_title', label: 'Boutique — titre de la page', section: 'Boutique' },
+  { key: 'home_hero_eyebrow', label: 'Accueil — petit texte au-dessus du titre', section: 'Accueil' },
+  { key: 'home_hero_title', label: 'Accueil — titre principal', section: 'Accueil' },
+  { key: 'home_hero_subtitle', label: 'Accueil — sous-titre', section: 'Accueil' },
+  { key: 'home_annonce_title', label: "Accueil — annonce : titre (vide = annonce masquée)", section: 'Accueil' },
+  { key: 'home_annonce_text', label: "Accueil — annonce : texte", section: 'Accueil' },
   { key: 'about_title', label: 'Notre histoire — titre', section: 'Notre histoire' },
   { key: 'about_tagline', label: 'Notre histoire — accroche', section: 'Notre histoire' },
   { key: 'about_founder_bio', label: 'Notre histoire — biographie du fondateur', section: 'Notre histoire' },

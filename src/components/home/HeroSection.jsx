@@ -1,106 +1,115 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useBooks } from '@/hooks/useBooks';
+import { ArrowRight } from 'lucide-react';
 import { useSiteContent } from '@/hooks/useSiteContent';
-import { isNguBook } from '@/lib/publisher';
 
-const SIGNATURE = 'Les histoires méritent leur place.';
-const SUBTITLE = 'Une maison pour les voix d’aujourd’hui et les idées qui traversent le temps.';
-
-// Position des couvertures dans le panneau (en % du cadre)
-const LAYOUTS = {
-  1: [{ left: '21%', top: '10%', width: '58%' }],
-  2: [
-    { left: '6%', top: '6%', width: '50%' },
-    { left: '44%', top: '30%', width: '50%' },
-  ],
-};
+const COVER_1 = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/09a57da28_image.png';
+const COVER_2 = 'https://media.base44.com/images/public/69e157c4e5760ca5035c57bd/f65254426_image.png';
 
 export default function HeroSection() {
   const content = useSiteContent();
-  const { books } = useBooks();
-
-  const featured = [...books.filter(isNguBook), ...books.filter((b) => !isNguBook(b))]
-    .filter((b) => b.coverSrc)
-    .slice(0, 2);
-  const layout = LAYOUTS[featured.length];
-
   return (
-    <section className={`grid ${layout ? 'md:grid-cols-[1.05fr_1fr]' : ''} md:min-h-[calc(100svh-4rem)]`}>
-      <div className="flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-16 md:py-24">
+    <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background pt-24 pb-16 px-6">
+
+      {/* ── Top text block ── */}
+      <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
+
+        {/* Eyebrow */}
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-xs font-medium tracking-widest uppercase text-primary/50"
+        >
+          {content.home_hero_eyebrow || 'Never Give Up Édition'}
+        </motion.p>
+
+        {/* Main headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: 'easeOut' }}
+          className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold text-primary leading-[1.1] tracking-tight"
+        >
+          {content.home_hero_title || 'Découvrez nos ouvrages.'}
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.55 }}
+          className="text-base sm:text-lg text-foreground/60 leading-relaxed max-w-xl"
+        >
+          {content.home_hero_subtitle || 'Des livres pour inspirer, motiver et accompagner votre croissance personnelle. Écrits avec cœur, pensés pour vous.'}
+        </motion.p>
+
+        {/* CTA buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.75 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+        >
+          <Link to="/boutique">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold text-sm px-8 py-3.5 rounded-full"
+            >
+              Commander nos livres
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </Link>
+
+          <Link to="/notre-histoire">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center gap-2 border border-primary text-primary font-semibold text-sm px-8 py-3.5 rounded-full bg-transparent hover:bg-primary/5 transition-colors"
+            >
+              Notre histoire
+            </motion.button>
+          </Link>
+        </motion.div>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.7 }}
-          className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#8A6A2A] mb-7"
+          transition={{ duration: 0.7, delay: 1 }}
+          className="text-xs text-foreground/35 tracking-wide"
         >
-          Never Give Up Édition
+          Livraison mondiale · Paiement sécurisé
         </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.1, ease: 'easeOut' }}
-          className="font-editorial font-medium text-[2.9rem] sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight text-primary mb-7 max-w-xl"
-        >
-          {content.home_signature || SIGNATURE}
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-          className="text-base text-foreground/70 leading-relaxed max-w-sm mb-10"
-        >
-          {content.home_signature_subtitle || SUBTITLE}
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.45, ease: 'easeOut' }}
-          className="flex flex-wrap items-center gap-x-8 gap-y-4"
-        >
-          <Link
-            to="/boutique"
-            className="inline-block bg-primary text-primary-foreground text-sm font-medium px-7 py-3.5 rounded-sm hover:bg-primary/90 transition-colors"
-          >
-            Explorer les livres
-          </Link>
-          <Link
-            to="/publier"
-            className="text-sm font-medium text-primary border-b border-primary pb-1 hover:text-primary/70 hover:border-primary/70 transition-colors"
-          >
-            Publier avec NGU
-          </Link>
-        </motion.div>
       </div>
 
-      {layout && (
-        <div className="bg-primary flex items-center justify-center p-8 md:p-12">
-          <div className="relative w-full max-w-[520px] aspect-[5/6]">
-            {featured.map((book, i) => (
-              <motion.div
-                key={book.id}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.35 + i * 0.2, ease: 'easeOut' }}
-                className="absolute"
-                style={{ ...layout[i], zIndex: i + 1 }}
+      {/* ── Book covers below ── */}
+      <div className="flex items-end justify-center gap-6 sm:gap-10 mt-16 flex-shrink-0">
+        {[
+          { src: COVER_1, to: '/livre/si-javais-su-a-16-ans', delay: 0.9, offset: 0 },
+          { src: COVER_2, to: '/livre/dieu-connait-ton-nom',  delay: 1.1, offset: -24 },
+        ].map((book, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: book.offset }}
+            transition={{ duration: 0.9, delay: book.delay, ease: 'easeOut' }}
+            whileHover={{ y: book.offset - 8, transition: { duration: 0.3 } }}
+            style={{ zIndex: i === 1 ? 2 : 1 }}
+          >
+            <Link to={book.to}>
+              <div
+                className="rounded-xl overflow-hidden cursor-pointer shadow-lg"
+                style={{ width: 'clamp(130px, 28vw, 240px)', aspectRatio: '2/3' }}
               >
-                <Link to={`/livre/${book.id}`} aria-label={book.title}>
-                  <img
-                    src={book.coverSrc}
-                    alt={`Couverture de ${book.title}`}
-                    className="w-full aspect-[2/3] object-cover rounded-[2px] shadow-[0_20px_40px_-14px_rgba(0,0,0,0.55)]"
-                  />
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
+                <img src={book.src} alt="couverture" className="w-full h-full object-cover" />
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
     </section>
   );
 }

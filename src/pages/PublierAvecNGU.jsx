@@ -21,19 +21,19 @@ export default function PublierAvecNGU() {
     <div className="px-6">
       <div className="max-w-3xl mx-auto py-20 md:py-28">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#8A6A2A] mb-6">Auteurs et maisons d’édition</p>
-        <h1 className="font-editorial font-medium text-5xl md:text-7xl leading-[1.02] tracking-tight text-primary mb-8">
+        <h1 className="font-serif font-semibold text-4xl md:text-6xl leading-[1.05] tracking-tight text-primary mb-8">
           Publier avec NGU
         </h1>
-        <p className="font-editorial text-2xl md:text-3xl leading-snug text-foreground/80 max-w-2xl">
+        <p className="font-serif text-2xl md:text-3xl leading-snug text-foreground/80 max-w-2xl">
           La librairie NGU accueille les livres de NGU Édition, ceux d’autres maisons d’édition et ceux d’auteurs qui veulent être lus.
         </p>
 
         <ol className="mt-20 space-y-12 border-t border-border/60 pt-12">
           {steps.map((s, i) => (
             <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-6">
-              <span className="font-editorial text-4xl text-[#8A6A2A] leading-none">{i + 1}</span>
+              <span className="font-serif text-4xl text-[#8A6A2A] leading-none">{i + 1}</span>
               <div>
-                <h2 className="font-editorial text-2xl md:text-3xl text-primary mb-3">{s.title}</h2>
+                <h2 className="font-serif text-2xl md:text-3xl text-primary mb-3">{s.title}</h2>
                 <p className="text-foreground/70 leading-relaxed max-w-xl">{s.text}</p>
               </div>
             </li>
@@ -47,7 +47,7 @@ export default function PublierAvecNGU() {
         <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
           <Link
             to="/contact"
-            className="inline-block bg-primary text-primary-foreground text-sm font-medium px-7 py-3.5 rounded-sm hover:bg-primary/90 transition-colors"
+            className="inline-block bg-primary text-primary-foreground text-sm font-medium px-7 py-3.5 rounded-full hover:bg-primary/90 transition-colors"
           >
             Nous écrire
           </Link>

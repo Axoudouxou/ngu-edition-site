@@ -27,7 +27,26 @@ export default function AdminDashboard() {
     navigate('/admin/login');
   };
 
-  const paidOrders = orders.filter(o => o.status === 'paid');
+  // Les commandes non payées au-delà de 24 h (expirées ou échouées) ne comptent pas et ne s'affichent pas.
+  const visibleOrders = orders.filter(o => o.status === 'paid' || o.status === 'pending');
+  const paidOrders = visibleOrders.filter(o => o.status === 'paid');
+  const pendingOrders = visibleOrders.filter(o => o.status === 'pending');
+
+  const clientCell = (o) => {
+    const d = o.delivery;
+    if (d) {
+      const place = [d.address, d.district, d.city].filter(Boolean).join(', ');
+      return (
+        <>
+          <p className="font-medium">{`${d.first_name} ${d.last_name}`.trim()}</p>
+          <p className="text-xs text-muted-foreground">{[d.phone, place].filter(Boolean).join(' · ')}</p>
+          {o.customer_email && <p className="text-xs text-muted-foreground">{o.customer_email}</p>}
+        </>
+      );
+    }
+    return <span className="text-muted-foreground">{o.customer_email || '—'}</span>;
+  };
+  const formatLabel = (o) => (String(o.format_id || '').includes('physique') ? 'Papier' : 'Ebook');
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 md:py-16">
@@ -48,8 +67,8 @@ export default function AdminDashboard() {
           <p className="text-3xl font-bold text-primary">{paidOrders.length}</p>
         </div>
         <div className="bg-muted/40 rounded-xl p-5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total commandes</p>
-          <p className="text-3xl font-bold text-primary">{orders.length}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">En attente de paiement</p>
+          <p className="text-3xl font-bold text-primary">{pendingOrders.length}</p>
         </div>
       </div>
 
@@ -79,31 +98,29 @@ export default function AdminDashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Référence</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Livre</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Format</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Client</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Montant</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
               </tr>
             </thead>
             <tbody>
-              {orders.slice(0, 15).map((o) => (
-                <tr key={o.reference} className="border-t border-border/30">
-                  <td className="px-4 py-3 font-mono text-xs">{o.reference}</td>
+              {visibleOrders.slice(0, 25).map((o) => (
+                <tr key={o.reference} className="border-t border-border/30 align-top">
                   <td className="px-4 py-3">{o.book_id}</td>
-                  <td className="px-4 py-3">{o.amount} FCFA</td>
+                  <td className="px-4 py-3">{formatLabel(o)}</td>
+                  <td className="px-4 py-3">{clientCell(o)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{Number(o.amount).toLocaleString('fr-FR')} FCFA</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      o.status === 'paid' ? 'bg-green-100 text-green-700' :
-                      o.status === 'failed' ? 'bg-red-100 text-red-700' :
-                      'bg-amber-100 text-amber-700'
-                    }`}>
-                      {o.status}
+                    <span className={`text-xs px-2 py-1 rounded-full ${o.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                      {o.status === 'paid' ? 'Payée' : 'En attente'}
                     </span>
                   </td>
                 </tr>
               ))}
-              {orders.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">Aucune commande pour l'instant</td></tr>
+              {visibleOrders.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">Aucune commande pour l'instant</td></tr>
               )}
             </tbody>
           </table>

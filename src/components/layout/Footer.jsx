@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
 import { useSiteContent } from '@/hooks/useSiteContent';
-
-const API_BASE = 'https://payment.nguedition.com';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -16,87 +14,15 @@ const navLinks = [
   { label: 'Boutique', to: '/boutique' },
   { label: 'Notre histoire', to: '/notre-histoire' },
   { label: 'Notre engagement', to: '/notre-engagement' },
-  { label: 'Publier avec NGU', to: '/publier' },
-  { label: 'Questions fréquentes', to: '/faq' },
   { label: 'Contact', to: '/contact' },
-];
-
-const legalLinks = [
   { label: 'Mentions légales', to: '/mentions-legales' },
   { label: 'Confidentialité', to: '/confidentialite' },
   { label: 'CGV', to: '/cgv' },
   { label: 'CGU', to: '/cgu' },
   { label: 'Remboursement', to: '/politique-remboursement' },
   { label: 'Livraison', to: '/politique-livraison' },
-  { label: 'Espace auteur', to: '/auteur' },
   { label: 'Admin', to: '/admin' },
 ];
-
-const DEFAULT_LIBRAIRIES = [
-  { name: 'Librairie Mont Carmel', address: 'Abidjan' },
-  { name: 'FNAC Cap Nord', address: 'Cap Nord Mall, Abidjan' },
-  { name: 'FNAC Cap Sud', address: 'Cap Sud Mall, Abidjan' },
-];
-
-function parseList(value, fallback) {
-  try {
-    const list = JSON.parse(value);
-    return Array.isArray(list) && list.length > 0 ? list : fallback;
-  } catch (_) {
-    return fallback;
-  }
-}
-
-function Newsletter() {
-  const [email, setEmail] = useState('');
-  const [state, setState] = useState('idle'); // idle | sending | done | error
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!email.includes('@')) return;
-    setState('sending');
-    try {
-      const res = await fetch(`${API_BASE}/api/newsletter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      if (!res.ok) throw new Error('failed');
-      setState('done');
-      setEmail('');
-    } catch (_) {
-      setState('error');
-    }
-  };
-
-  return (
-    <form onSubmit={submit} className="mt-8 max-w-sm">
-      <label htmlFor="footer-newsletter" className="block text-sm text-primary-foreground/80 mb-3">
-        Restez informés de nos nouvelles parutions.
-      </label>
-      <div className="flex">
-        <input
-          id="footer-newsletter"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); if (state !== 'sending') setState('idle'); }}
-          placeholder="Votre adresse email"
-          className="flex-1 min-w-0 bg-transparent border border-primary-foreground/30 rounded-l-sm px-4 py-2.5 text-sm placeholder:text-primary-foreground/40 focus:outline-none focus:border-primary-foreground/70"
-        />
-        <button
-          type="submit"
-          disabled={state === 'sending'}
-          className="bg-primary-foreground text-primary text-sm font-medium px-5 rounded-r-sm hover:bg-primary-foreground/90 transition-colors disabled:opacity-60"
-        >
-          S’inscrire
-        </button>
-      </div>
-      {state === 'done' && <p className="mt-3 text-sm text-secondary">Merci, vous êtes inscrit.</p>}
-      {state === 'error' && <p className="mt-3 text-sm text-primary-foreground/80">L’inscription n’a pas abouti. Réessayez dans un instant.</p>}
-    </form>
-  );
-}
 
 export default function Footer() {
   const content = useSiteContent();
@@ -105,7 +31,6 @@ export default function Footer() {
   const whatsappUrl = content.contact_whatsapp_url || 'https://wa.me/2250703829289';
   const instagramUrl = content.instagram_url || 'https://www.instagram.com/nevergiveupedt';
   const facebookUrl = content.facebook_url || 'https://www.facebook.com/people/Never-Give-Up-Edition/61583814721195/?mibextid=wwXIfr';
-  const librairies = parseList(content.home_librairies, DEFAULT_LIBRAIRIES);
 
   const socials = [
     { label: 'WhatsApp', href: whatsappUrl, icon: <WhatsAppIcon /> },
@@ -113,78 +38,56 @@ export default function Footer() {
     { label: 'Facebook', href: facebookUrl, icon: <Facebook className="w-4 h-4" /> },
   ];
 
-  const heading = 'text-[11px] font-medium uppercase tracking-[0.18em] text-primary-foreground/50 mb-5';
-  const link = 'text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors';
-
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="max-w-6xl mx-auto px-6 py-16 grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div>
-          <Link to="/" className="inline-flex items-center gap-3">
-            <img src="/logo.jpg" alt="Never Give Up Édition" className="h-10 w-10 rounded-sm object-cover" />
-            <span className="font-serif text-lg">Never Give Up Édition</span>
+      <div className="max-w-5xl mx-auto px-8 py-6">
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.jpg" alt="NGU" className="h-9 w-auto object-contain rounded-sm" />
+            <p className="font-serif text-base font-semibold text-primary-foreground">Never Give Up Édition</p>
           </Link>
-          <p className="font-editorial italic text-2xl leading-snug text-primary-foreground/85 mt-6 max-w-xs">
-            Les histoires méritent leur place.
-          </p>
-          <Newsletter />
-        </div>
-
-        <nav aria-label="Navigation du pied de page">
-          <p className={heading}>Naviguer</p>
-          <ul className="space-y-3">
-            {navLinks.map((l) => (
-              <li key={l.to}><Link to={l.to} className={link}>{l.label}</Link></li>
-            ))}
-          </ul>
-        </nav>
-
-        <div>
-          <p className={heading}>Où trouver nos livres</p>
-          <ul className="space-y-3">
-            {librairies.map((l) => (
-              <li key={l.name} className="text-sm text-primary-foreground/80">
-                {l.name}
-                {l.address && <span className="block text-primary-foreground/50">{l.address}</span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <p className={heading}>Contact</p>
-          <ul className="space-y-3">
-            <li><a href={`mailto:${email}`} className={`${link} inline-flex items-center gap-2`}><Mail className="w-3.5 h-3.5" /> {email}</a></li>
-            <li><a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={`${link} inline-flex items-center gap-2`}><Phone className="w-3.5 h-3.5" /> {phoneDisplay}</a></li>
-          </ul>
-          <div className="flex items-center gap-2 mt-6">
+          <div className="flex items-center gap-2">
             {socials.map((s) => (
               <a
                 key={s.label}
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary text-secondary-foreground hover:opacity-80 transition-opacity"
                 aria-label={s.label}
-                className="w-9 h-9 rounded-full border border-primary-foreground/30 flex items-center justify-center text-primary-foreground/80 hover:text-primary-foreground hover:border-primary-foreground/70 transition-colors"
               >
                 {s.icon}
               </a>
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-primary-foreground/15">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            {legalLinks.map((l) => (
-              <li key={l.to}><Link to={l.to} className="text-xs text-primary-foreground/50 hover:text-primary-foreground/80 transition-colors">{l.label}</Link></li>
-            ))}
-          </ul>
-          <p className="text-xs text-primary-foreground/40">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <span className="text-primary-foreground/20 text-xs">·</span>
+          <a href={`mailto:${email}`} className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
+            <Mail className="w-3 h-3" /> {email}
+          </a>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-foreground/50 hover:text-secondary transition-colors flex items-center gap-1">
+            <Phone className="w-3 h-3" /> {phoneDisplay}
+          </a>
+        </div>
+
+        <div className="border-t border-primary-foreground/10 pt-3 text-center">
+          <p className="text-xs text-primary-foreground/30">
             © {new Date().getFullYear()} Never Give Up Édition. Tous droits réservés.
           </p>
         </div>
+
       </div>
     </footer>
   );

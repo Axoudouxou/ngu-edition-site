@@ -15,7 +15,6 @@ import NotreHistoire from '@/pages/NotreHistoire';
 import NotreEngagement from '@/pages/NotreEngagement';
 import Contact from '@/pages/Contact';
 import PublierAvecNGU from '@/pages/PublierAvecNGU';
-import Faq from '@/pages/Faq';
 import MentionsLegales from '@/pages/MentionsLegales';
 import Confidentialite from '@/pages/Confidentialite';
 import CGV from '@/pages/CGV';
@@ -49,7 +48,6 @@ function App() {
               <Route path="/notre-engagement" element={<NotreEngagement />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/publier" element={<PublierAvecNGU />} />
-              <Route path="/faq" element={<Faq />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
               <Route path="/cgv" element={<CGV />} />
