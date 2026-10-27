@@ -665,3 +665,10 @@ def register_author_routes(app, get_db, require_admin):
         conn.commit()
         conn.close()
         return jsonify({"status": "ok"})
+
+    # ── Modules complémentaires (chargés s'ils sont présents) ─────
+    try:
+        import admin_api
+        admin_api.register(app, get_db, require_admin)
+    except Exception as e:
+        print(f"Module admin_api non chargé : {e}")
