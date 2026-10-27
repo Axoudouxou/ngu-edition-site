@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { BookOpen, FileText, Package, LogOut, ShoppingBag } from 'lucide-react';
+import { BookOpen, FileText, Package, LogOut, ShoppingBag, Users } from 'lucide-react';
 import { isAdminLoggedIn, clearAdminToken, adminFetchJson } from '@/lib/adminAuth';
 
 const cards = [
   { to: '/admin/livres', label: 'Livres', icon: BookOpen, desc: 'Titres, prix, couvertures, fichiers ebook' },
   { to: '/admin/contenu', label: 'Contenu du site', icon: FileText, desc: 'Textes modifiables de chaque page' },
   { to: '/admin/stock', label: 'Stock', icon: Package, desc: 'Quantités disponibles' },
+  { to: '/admin/auteurs', label: 'Auteurs', icon: Users, desc: 'Ventes, commissions et versements' },
 ];
 
 export default function AdminDashboard() {
@@ -53,7 +54,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Nav cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
         {cards.map(({ to, label, icon: Icon, desc }) => (
           <Link
             key={to}

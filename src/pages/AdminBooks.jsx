@@ -9,7 +9,7 @@ import { isAdminLoggedIn, adminFetchJson, adminFetch } from '@/lib/adminAuth';
 const EMPTY_BOOK = {
   id: '', title: '', author: '', tagline: '', description: '',
   coverSrc: '', amazonUrl: '', ebookPriceFCFA: 5000, physiquePriceFCFA: 7000,
-  isEbook: true, points: [], testimonials: [], formats: [],
+  isEbook: true, points: [], testimonials: [], formats: [], publisher: 'NGU Édition',
 };
 
 export default function AdminBooks() {
@@ -40,6 +40,11 @@ export default function AdminBooks() {
       await adminFetchJson('/api/admin/books', {
         method: 'POST',
         body: JSON.stringify(selected),
+      });
+      await adminFetch(`/api/admin/books/${selected.id}/publisher`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publisher: selected.publisher || '' }),
       });
       setSavedMsg('Enregistré !');
       setTimeout(() => setSavedMsg(''), 2000);
@@ -153,6 +158,20 @@ export default function AdminBooks() {
               </div>
 
               <div className="space-y-1.5">
+                <Label>Maison d'édition</Label>
+                <Input
+                  list="ngu-publishers"
+                  value={selected.publisher || ''}
+                  onChange={(e) => setField('publisher', e.target.value)}
+                  placeholder="NGU Édition"
+                />
+                <datalist id="ngu-publishers">
+                  {[...new Set(['NGU Édition', ...books.map((b) => b.publisher).filter(Boolean)])].map((n) => <option key={n} value={n} />)}
+                </datalist>
+                <p className="text-xs text-muted-foreground">Laisse « NGU Édition » pour un livre publié par NGU. Pour un livre d'un partenaire, écris le nom de sa maison d'édition.</p>
+              </div>
+
+              <div className="space-y-1.5">
                 <Label>Titre</Label>
                 <Input value={selected.title} onChange={(e) => setField('title', e.target.value)} />
               </div>
@@ -177,7 +196,7 @@ export default function AdminBooks() {
                   <Input type="number" value={selected.ebookPriceFCFA} onChange={(e) => setField('ebookPriceFCFA', Number(e.target.value))} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Prix physique (FCFA)</Label>
+                  <Label>Prix physique (FCFA) — 0 s'il n'y a pas de version papier</Label>
                   <Input type="number" value={selected.physiquePriceFCFA} onChange={(e) => setField('physiquePriceFCFA', Number(e.target.value))} />
                 </div>
               </div>

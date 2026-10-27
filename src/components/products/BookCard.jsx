@@ -2,25 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getOfferings } from '@/lib/bookOfferings';
+import { isNguBook, publisherLabel } from '@/lib/publisher';
 
-const AMAZON_URL = 'https://www.amazon.fr/s?i=stripbooks&rh=p_27%3ASOHAN-HENRI%2BADOU&s=relevancerank&language=en&text=SOHAN-HENRI+ADOU&ref=dp_byline_sr_book_1';
-
-const DEFAULT_PRICES = {
-  africa: { ebook: '5 000 FCFA', physique: '7 000 FCFA' },
-  world:  { ebook: '5 000 FCFA', physique: '7 000 FCFA' },
-};
-
-export default function BookCard({ book, delay = 0, region, prices, amazonUrl }) {
-  const effectivePrices = prices ?? DEFAULT_PRICES;
-  const effectiveAmazonUrl = amazonUrl ?? AMAZON_URL;
-  const isAfrica = region === 'africa';
-  const loading = region === null;
-
-  const priceLabel = loading
-    ? '…'
-    : isAfrica
-      ? `À partir de ${effectivePrices.africa.ebook}`
-      : `À partir de ${effectivePrices.world.ebook}`;
+export default function BookCard({ book, delay = 0 }) {
+  const { hasEbook, hasPhysical, ebookPrice, physicalPrice } = getOfferings(book);
+  const prices = [ebookPrice, physicalPrice].filter((p) => p > 0);
+  const priceLabel = prices.length
+    ? `À partir de ${Math.min(...prices).toLocaleString('fr-FR')} FCFA`
+    : '';
+  const availability = hasEbook && hasPhysical
+    ? 'Disponible en e-book et format papier'
+    : hasPhysical
+      ? 'Disponible en format papier'
+      : 'Disponible en e-book';
 
   return (
     <motion.div
@@ -43,11 +38,12 @@ export default function BookCard({ book, delay = 0, region, prices, amazonUrl })
 
         {/* Info */}
         <div className="space-y-2 px-1">
+          <p className={`text-[11px] font-medium uppercase tracking-[0.16em] ${isNguBook(book) ? 'text-[#8A6A2A]' : 'text-muted-foreground'}`}>{publisherLabel(book)}</p>
           <p className="text-xs text-muted-foreground uppercase tracking-widest">{book.author}</p>
           <h3 className="font-serif text-xl font-semibold text-primary leading-snug group-hover:text-accent transition-colors duration-200">
             {book.title}
           </h3>
-          <p className="text-sm text-muted-foreground">Disponible en e-book et format papier</p>
+          <p className="text-sm text-muted-foreground">{availability}</p>
           <p className="text-lg font-bold text-primary">{priceLabel}</p>
         </div>
 

@@ -14,6 +14,8 @@ import Cart from '@/pages/Cart';
 import NotreHistoire from '@/pages/NotreHistoire';
 import NotreEngagement from '@/pages/NotreEngagement';
 import Contact from '@/pages/Contact';
+import PublierAvecNGU from '@/pages/PublierAvecNGU';
+import Faq from '@/pages/Faq';
 import MentionsLegales from '@/pages/MentionsLegales';
 import Confidentialite from '@/pages/Confidentialite';
 import CGV from '@/pages/CGV';
@@ -27,6 +29,10 @@ import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminBooks from '@/pages/AdminBooks';
 import AdminContent from '@/pages/AdminContent';
+import AdminAuthors from '@/pages/AdminAuthors';
+import AuthorLogin from '@/pages/AuthorLogin';
+import AuthorVerify from '@/pages/AuthorVerify';
+import AuthorDashboard from '@/pages/AuthorDashboard';
 
 function App() {
   return (
@@ -42,6 +48,8 @@ function App() {
               <Route path="/notre-histoire" element={<NotreHistoire />} />
               <Route path="/notre-engagement" element={<NotreEngagement />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/publier" element={<PublierAvecNGU />} />
+              <Route path="/faq" element={<Faq />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
               <Route path="/cgv" element={<CGV />} />
@@ -54,7 +62,11 @@ function App() {
               <Route path="/admin/livres" element={<AdminBooks />} />
               <Route path="/admin/contenu" element={<AdminContent />} />
               <Route path="/admin/stock" element={<AdminStock />} />
+              <Route path="/admin/auteurs" element={<AdminAuthors />} />
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/auteur" element={<AuthorLogin />} />
+              <Route path="/auteur/connexion" element={<AuthorVerify />} />
+              <Route path="/auteur/tableau-de-bord" element={<AuthorDashboard />} />
             </Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>

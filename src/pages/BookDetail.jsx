@@ -7,6 +7,7 @@ import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { initiateJekoPayment } from '@/lib/jekoPayment';
 import { useToast } from '@/components/ui/use-toast';
 import PhysicalCheckoutDrawer from '@/components/checkout/PhysicalCheckoutDrawer';
+import { isNguBook, publisherLabel } from '@/lib/publisher';
 
 
 
@@ -45,10 +46,21 @@ export default function BookDetail() {
     ? book.formats
     : [
         ...(book.isEbook !== false ? [{ id: book.id + '-ebook', label: 'E-book PDF', price: book.ebookPriceFCFA, category: 'ebook', badge: 'Ebook', format: 'Ebook PDF', delivery: 'Téléchargement immédiat après paiement' }] : []),
-        { id: book.id + '-physique', label: 'Livre physique', price: book.physiquePriceFCFA, category: 'physique', badge: 'Physique', format: 'Livre physique', delivery: 'Livraison en 7 à 15 jours ouvrés' },
+        ...(Number(book.physiquePriceFCFA) > 0 ? [{ id: book.id + '-physique', label: 'Livre physique', price: book.physiquePriceFCFA, category: 'physique', badge: 'Physique', format: 'Livre physique', delivery: 'Livraison en 7 à 15 jours ouvrés' }] : []),
       ];
-  const format = formats[selectedFormat];
+  const format = formats[selectedFormat] || formats[0];
+  if (!format) {
+    return (
+      <div className="max-w-6xl mx-auto px-6 py-24 text-center">
+        <p className="text-foreground/60 mb-4">Ce livre n'est pas disponible pour le moment.</p>
+        <Link to="/boutique" className="text-accent hover:underline">Retour à la boutique</Link>
+      </div>
+    );
+  }
   const isEbook = format.category === 'ebook';
+  const paragraphs = (book.description || '').split('\n\n').filter((p) => p.trim());
+  const points = Array.isArray(book.points) ? book.points : [];
+  const testimonials = Array.isArray(book.testimonials) ? book.testimonials : [];
   const fcfaPrice = isEbook ? book.ebookPriceFCFA : book.physiquePriceFCFA;
 
   // Ebooks: JEKO payment everywhere in the world. Physical books: JEKO+drawer in
@@ -128,7 +140,8 @@ export default function BookDetail() {
           className="flex flex-col justify-center space-y-6"
         >
           <div>
-            <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">{book.author}</p>
+            <p className="text-sm text-muted-foreground uppercase tracking-widest mb-1">{book.author}</p>
+            <p className={`text-[11px] font-medium uppercase tracking-[0.16em] mb-3 ${isNguBook(book) ? 'text-[#8A6A2A]' : 'text-muted-foreground'}`}>{publisherLabel(book)}</p>
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-primary leading-tight">{book.title}</h1>
             <p className="mt-2 text-foreground/60 italic">{book.tagline}</p>
           </div>
@@ -275,55 +288,65 @@ export default function BookDetail() {
       </div>
 
       {/* About the book */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-24">
-        <div>
-          <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">À propos</p>
-          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-primary mb-5">Bien plus qu'un livre</h2>
-          <div className="text-foreground/70 leading-relaxed space-y-4">
-            {book.description.split('\n\n').map((para, i) => (
-              <p key={i}>{para}</p>
+      {(paragraphs.length > 0 || points.length > 0) && (
+        <div className={`grid grid-cols-1 ${paragraphs.length > 0 && points.length > 0 ? 'md:grid-cols-2' : ''} gap-16 mb-24`}>
+          {paragraphs.length > 0 && (
+            <div>
+              <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">À propos</p>
+              <h2 className="font-serif text-2xl md:text-3xl font-semibold text-primary mb-5">
+                {isNguBook(book) ? "Bien plus qu'un livre" : 'À propos de ce livre'}
+              </h2>
+              <div className="text-foreground/70 leading-relaxed space-y-4">
+                {paragraphs.map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
+            </div>
+          )}
+          {points.length > 0 && (
+            <div className="space-y-4">
+              <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">Points forts</p>
+              {points.map((point, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="flex items-start gap-3"
+                >
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground/80">{point}</span>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Testimonials */}
+      {testimonials.length > 0 && (
+        <div className="bg-muted/30 rounded-2xl px-8 py-12">
+          <p className="text-accent text-sm font-semibold tracking-widest uppercase text-center mb-8">Ils l'ont lu</p>
+          <h2 className="font-serif text-2xl font-semibold text-primary text-center mb-10">Ce qu'en disent les lecteurs</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="bg-white rounded-xl p-6 border border-border/40 shadow-sm"
+              >
+                <Stars />
+                <p className="mt-4 text-foreground/70 italic leading-relaxed">"{t.text}"</p>
+                <p className="mt-3 text-sm font-semibold text-accent">— {t.author}</p>
+              </motion.div>
             ))}
           </div>
         </div>
-        <div className="space-y-4">
-          <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">Points forts</p>
-          {book.points.map((point, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="flex items-start gap-3"
-            >
-              <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-              <span className="text-foreground/80">{point}</span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Testimonials */}
-      <div className="bg-muted/30 rounded-2xl px-8 py-12">
-        <p className="text-accent text-sm font-semibold tracking-widest uppercase text-center mb-8">Ils l'ont lu</p>
-        <h2 className="font-serif text-2xl font-semibold text-primary text-center mb-10">Ce qu'en disent les lecteurs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {book.testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="bg-white rounded-xl p-6 border border-border/40 shadow-sm"
-            >
-              <Stars />
-              <p className="mt-4 text-foreground/70 italic leading-relaxed">"{t.text}"</p>
-              <p className="mt-3 text-sm font-semibold text-accent">— {t.author}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Physical Checkout Drawer (Afrique) */}
       <PhysicalCheckoutDrawer

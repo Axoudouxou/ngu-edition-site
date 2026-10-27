@@ -3,13 +3,8 @@ import { useBooks } from '@/hooks/useBooks';
 import BookCard from '@/components/products/BookCard';
 import { motion } from 'framer-motion';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { isNguBook } from '@/lib/publisher';
 
-
-
-const PRICES = {
-  africa: { ebook: '5 000 FCFA', physique: '7 000 FCFA' },
-  world:  { ebook: '5 000 FCFA', physique: '7 000 FCFA' },
-};
 
 export default function Boutique() {
   const { region, loading, setManualOverride } = useGeoRegion();
@@ -31,18 +26,28 @@ export default function Boutique() {
       </motion.div>
 
       {/* Books grid */}
-      <div className="grid grid-cols-2 gap-8 md:gap-14 max-w-2xl mx-auto">
-        {books.map((book, i) => (
-          <BookCard
-            key={book.id}
-            book={book}
-            delay={i * 0.12}
-            region={region}
-            prices={PRICES}
-            amazonUrl={book.amazonUrl}
-          />
-        ))}
-      </div>
+      {(() => {
+        const ngu = books.filter(isNguBook);
+        const partners = books.filter((b) => !isNguBook(b));
+        const grid = (list) => (
+          <div className="grid grid-cols-2 gap-8 md:gap-14 max-w-2xl mx-auto">
+            {list.map((book, i) => <BookCard key={book.id} book={book} delay={i * 0.12} />)}
+          </div>
+        );
+        if (partners.length === 0) return grid(books);
+        return (
+          <div className="space-y-20">
+            <section>
+              <h2 className="font-editorial font-medium text-3xl md:text-4xl text-primary text-center mb-10">Publications NGU</h2>
+              {grid(ngu)}
+            </section>
+            <section>
+              <h2 className="font-editorial font-medium text-3xl md:text-4xl text-primary text-center mb-10">Maisons partenaires</h2>
+              {grid(partners)}
+            </section>
+          </div>
+        );
+      })()}
 
       {/* Manual override */}
       {!loading && (
