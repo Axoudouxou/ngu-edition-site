@@ -10,6 +10,8 @@ const KNOWN_KEYS = [
   { key: 'home_signature', label: 'Accueil — signature (grand titre)', section: 'Accueil' },
   { key: 'home_signature_subtitle', label: 'Accueil — sous-titre', section: 'Accueil' },
   { key: 'home_maison_text', label: 'Accueil — texte « La maison »', section: 'Accueil' },
+  { key: 'boutique_eyebrow', label: 'Boutique — petit texte au-dessus du titre', section: 'Boutique' },
+  { key: 'boutique_title', label: 'Boutique — titre de la page', section: 'Boutique' },
   { key: 'about_title', label: 'Notre histoire — titre', section: 'Notre histoire' },
   { key: 'about_tagline', label: 'Notre histoire — accroche', section: 'Notre histoire' },
   { key: 'about_founder_bio', label: 'Notre histoire — biographie du fondateur', section: 'Notre histoire' },
