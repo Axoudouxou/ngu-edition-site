@@ -518,8 +518,15 @@ def register(app, get_db, require_admin):
                                   for a in conn.execute("SELECT id FROM authors").fetchall())
             except Exception as e:
                 print(f"Erreur solde auteurs: {e}")
+        new_submissions = 0
+        try:
+            if _has_table(conn, "submissions"):
+                new_submissions = conn.execute("SELECT COUNT(*) AS n FROM submissions WHERE status = 'nouvelle'").fetchone()["n"]
+        except Exception:
+            pass
         conn.close()
         return jsonify({
+            "submissions_new": new_submissions,
             "revenue": revenue,
             "orders": {
                 "paid": len(paid),

@@ -683,3 +683,8 @@ def register_author_routes(app, get_db, require_admin):
         admin_api.register(app, get_db, require_admin)
     except Exception as e:
         print(f"Module admin_api non chargé : {e}")
+    try:
+        import submissions
+        submissions.register(app, get_db, require_admin)
+    except Exception as e:
+        print(f"Module submissions non chargé : {e}")
