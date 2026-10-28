@@ -32,6 +32,7 @@ import AdminStock from '@/admin/Stock';
 import AdminPeople from '@/admin/People';
 import AdminContent from '@/admin/Content';
 import AdminReports from '@/admin/Reports';
+import AdminNewsletter from '@/admin/Newsletter';
 import AdminSettings from '@/admin/Settings';
 import AuthorLogin from '@/pages/AuthorLogin';
 import AuthorVerify from '@/pages/AuthorVerify';
@@ -72,6 +73,7 @@ function App() {
               <Route path="stock" element={<AdminStock />} />
               <Route path="auteurs" element={<AdminPeople />} />
               <Route path="contenu" element={<AdminContent />} />
+              <Route path="newsletter" element={<AdminNewsletter />} />
               <Route path="rapports" element={<AdminReports />} />
               <Route path="parametres" element={<AdminSettings />} />
               <Route path="livres" element={<Navigate to="/admin/catalogue" replace />} />

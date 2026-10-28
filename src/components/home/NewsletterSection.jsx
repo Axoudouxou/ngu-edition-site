@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
 
 const API_BASE = 'https://payment.nguedition.com';
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null); // { ok, text }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
+    setMessage(null);
     try {
-      await fetch(`${API_BASE}/api/newsletter`, {
+      const res = await fetch(`${API_BASE}/api/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim() }),
       });
-      toast.success('Merci pour votre inscription !');
+      if (!res.ok) throw new Error('inscription refusée');
+      setMessage({ ok: true, text: 'Merci, vous êtes bien inscrit.' });
       setEmail('');
     } catch (_) {
-      toast.error('Une erreur est survenue, réessayez.');
+      setMessage({ ok: false, text: "L'inscription n'a pas abouti. Réessayez dans un instant." });
     } finally {
       setLoading(false);
     }
@@ -54,6 +56,9 @@ export default function NewsletterSection() {
             {loading ? '...' : "S'inscrire"}
           </Button>
         </form>
+        {message && (
+          <p role="status" className={`mt-4 text-sm ${message.ok ? 'text-primary' : 'text-destructive'}`}>{message.text}</p>
+        )}
       </div>
     </section>
   );

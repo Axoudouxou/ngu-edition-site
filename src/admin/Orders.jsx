@@ -6,6 +6,8 @@ import {
 } from './ui';
 import { api, clientName, downloadCsv, fcfa, fmtDate, waLink } from './api';
 
+const METHODS = { wave: 'Wave', orange: 'Orange Money', mtn: 'MTN Mobile Money', moov: 'Moov Money', djamo: 'Djamo' };
+
 const PERIODS = [
   { value: 'all', label: 'Toutes les dates' },
   { value: 'today', label: "Aujourd'hui" },
@@ -72,6 +74,7 @@ function OrderDetail({ reference, onChanged }) {
         <Row label="Livre">{o.book_title}</Row>
         <Row label="Format">{o.kind === 'papier' ? 'Livre papier' : 'Ebook'}</Row>
         <Row label="Montant"><span className="font-medium">{fcfa(o.amount)}</span></Row>
+        <Row label="Paiement">{METHODS[o.payment_method] || <span className="text-[#7B8478]">Non enregistré (commande passée avant la mise à jour)</span>}</Row>
         <Row label="Commande">{o.short}</Row>
       </dl>
 
@@ -202,11 +205,11 @@ export default function Orders() {
     try {
       const all = await api(query({ limit: '500', offset: '0' }));
       downloadCsv(`commandes-${new Date().toISOString().slice(0, 10)}.csv`, [
-        ['Date', 'Commande', 'Client', 'Email', 'Téléphone', 'Adresse', 'Ville', 'Livre', 'Format', 'Montant (FCFA)', 'Statut', 'Livraison'],
+        ['Date', 'Commande', 'Client', 'Email', 'Téléphone', 'Adresse', 'Ville', 'Livre', 'Format', 'Montant (FCFA)', 'Moyen de paiement', 'Statut', 'Livraison'],
         ...all.items.map((o) => [
           o.date, o.short, clientName(o), o.customer_email, o.delivery?.phone || '',
           [o.delivery?.address, o.delivery?.district].filter(Boolean).join(', '), o.delivery?.city || '',
-          o.book_title, o.kind, o.amount, ({ paid: 'Payée', pending: 'En attente', refunded: 'Remboursée' })[o.status] || o.status,
+          o.book_title, o.kind, o.amount, METHODS[o.payment_method] || '', ({ paid: 'Payée', pending: 'En attente', refunded: 'Remboursée' })[o.status] || o.status,
           o.fulfillment ? FULFILLMENT[o.fulfillment].label : '',
         ]),
       ]);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BarChart3, BookOpen, FileText, LayoutDashboard, LogOut, Menu, Package, Settings, ShoppingBag, Users, X,
+  BarChart3, BookOpen, FileText, LayoutDashboard, LogOut, Mail, Menu, Package, Settings, ShoppingBag, Users, X,
 } from 'lucide-react';
 import { clearAdminToken, isAdminLoggedIn } from '@/lib/adminAuth';
 
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/admin/stock', label: 'Stock', icon: Package },
   { to: '/admin/auteurs', label: 'Auteurs et partenaires', icon: Users },
   { to: '/admin/contenu', label: 'Contenu du site', icon: FileText },
+  { to: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { to: '/admin/rapports', label: 'Rapports', icon: BarChart3 },
   { to: '/admin/parametres', label: 'Paramètres', icon: Settings },
 ];
