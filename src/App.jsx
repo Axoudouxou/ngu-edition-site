@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { CartProvider } from '@/lib/CartContext';
 
@@ -23,12 +23,16 @@ import PolitiqueRemboursement from '@/pages/PolitiqueRemboursement';
 import PolitiqueLivraison from '@/pages/PolitiqueLivraison';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
-import AdminStock from '@/pages/AdminStock';
 import AdminLogin from '@/pages/AdminLogin';
-import AdminDashboard from '@/pages/AdminDashboard';
-import AdminBooks from '@/pages/AdminBooks';
-import AdminContent from '@/pages/AdminContent';
-import AdminAuthors from '@/pages/AdminAuthors';
+import AdminLayout from '@/admin/AdminLayout';
+import AdminDashboard from '@/admin/Dashboard';
+import AdminOrders from '@/admin/Orders';
+import AdminCatalogue from '@/admin/Catalogue';
+import AdminStock from '@/admin/Stock';
+import AdminPeople from '@/admin/People';
+import AdminContent from '@/admin/Content';
+import AdminReports from '@/admin/Reports';
+import AdminSettings from '@/admin/Settings';
 import AuthorLogin from '@/pages/AuthorLogin';
 import AuthorVerify from '@/pages/AuthorVerify';
 import AuthorDashboard from '@/pages/AuthorDashboard';
@@ -56,15 +60,21 @@ function App() {
               <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
               <Route path="/paiement-succes" element={<PaymentSuccess />} />
               <Route path="/paiement-echec" element={<PaymentFailed />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/livres" element={<AdminBooks />} />
-              <Route path="/admin/contenu" element={<AdminContent />} />
-              <Route path="/admin/stock" element={<AdminStock />} />
-              <Route path="/admin/auteurs" element={<AdminAuthors />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/auteur" element={<AuthorLogin />} />
               <Route path="/auteur/connexion" element={<AuthorVerify />} />
               <Route path="/auteur/tableau-de-bord" element={<AuthorDashboard />} />
+            </Route>
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="commandes" element={<AdminOrders />} />
+              <Route path="catalogue" element={<AdminCatalogue />} />
+              <Route path="stock" element={<AdminStock />} />
+              <Route path="auteurs" element={<AdminPeople />} />
+              <Route path="contenu" element={<AdminContent />} />
+              <Route path="rapports" element={<AdminReports />} />
+              <Route path="parametres" element={<AdminSettings />} />
+              <Route path="livres" element={<Navigate to="/admin/catalogue" replace />} />
             </Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 import { adminLogin, isAdminLoggedIn } from '@/lib/adminAuth';
+import { btn, inputCls } from '@/admin/ui';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -31,33 +29,25 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-muted/30">
-      <div className="max-w-sm w-full bg-white rounded-2xl border border-border/50 shadow-sm p-8">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-          <Lock className="w-5 h-5 text-primary" />
-        </div>
-        <h1 className="font-serif text-2xl font-semibold text-primary text-center mb-6">
-          Espace administrateur
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Mot de passe</Label>
-            <Input
+    <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center px-6 font-sans">
+      <div className="w-full max-w-sm">
+        <p className="font-editorial text-4xl font-medium text-[#20392D] text-center">NGU Édition</p>
+        <p className="text-[10px] tracking-[0.16em] text-[#8A5F1F] text-center mt-2 mb-10">ADMINISTRATION</p>
+        <form onSubmit={handleSubmit} className="bg-white border border-[#E4E1D8] rounded-lg p-7 space-y-4">
+          <label className="block">
+            <span className="block text-xs font-medium text-[#4B5A51] mb-1.5">Mot de passe</span>
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              className={inputCls}
               autoFocus
             />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-accent hover:bg-accent/90 text-white rounded-full py-5 gap-2"
-          >
+          </label>
+          {error && <p className="text-sm text-[#A33B2F]">{error}</p>}
+          <button type="submit" disabled={loading || !password} className={`${btn.primary} w-full`}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Se connecter'}
-          </Button>
+          </button>
         </form>
       </div>
     </div>
