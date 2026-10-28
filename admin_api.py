@@ -51,6 +51,10 @@ def init_tables(get_db):
             refunded_at REAL,
             note TEXT NOT NULL DEFAULT ''
         );
+        CREATE TABLE IF NOT EXISTS order_payment (
+            reference TEXT PRIMARY KEY,
+            method TEXT NOT NULL DEFAULT ''
+        );
         CREATE TABLE IF NOT EXISTS stock_baseline (
             format_id TEXT PRIMARY KEY,
             since REAL NOT NULL
@@ -112,11 +116,13 @@ def _raw_orders(conn):
                d.first_name AS d_first_name, d.last_name AS d_last_name, d.phone AS d_phone,
                d.address AS d_address, d.district AS d_district, d.city AS d_city,
                d.country AS d_country,
-               oa.fulfillment AS fulfillment, oa.refunded AS refunded, oa.note AS note
+               oa.fulfillment AS fulfillment, oa.refunded AS refunded, oa.note AS note,
+               op.method AS payment_method
         FROM orders o
         LEFT JOIN books b ON b.id = o.book_id
         LEFT JOIN order_delivery d ON d.reference = o.reference
         LEFT JOIN order_admin oa ON oa.reference = o.reference
+        LEFT JOIN order_payment op ON op.reference = o.reference
     """
     return conn.execute(sql).fetchall()
 
@@ -159,6 +165,7 @@ def _shape(r, now):
         "delivery": delivery,
         "fulfillment": fulfillment,
         "note": r["note"] or "",
+        "payment_method": r["payment_method"] or "",
         "t": t,
         "t_created": r["t_created"],
         "date": _iso(t) if t else "",
@@ -201,6 +208,51 @@ def _revenue_orders(orders):
     return [o for o in orders if o["status"] == "paid"]
 
 
+PAYMENT_METHODS = ("wave", "orange", "mtn", "moov", "djamo")
+
+
+def _expected_price(conn, book_id, format_id):
+    """Prix officiel du livre dans la base.
+    Retourne (état, prix) : "ok", "unknown_book", ou "skip" si les colonnes de prix sont introuvables."""
+    cols = _cols(conn, "books")
+    ebook = next((c for c in cols if "ebook" in c.lower() and "price" in c.lower()), None)
+    paper = next((c for c in cols if ("phys" in c.lower() or "papier" in c.lower()) and "price" in c.lower()), None)
+    wanted = paper if "physique" in format_id else ebook
+    if not wanted:
+        return "skip", None
+    row = conn.execute(f"SELECT {wanted} AS price FROM books WHERE id = ?", (book_id,)).fetchone()
+    if not row:
+        return "unknown_book", None
+    return "ok", row["price"]
+
+
+def check_price(conn, data):
+    """None si la demande de paiement est conforme, sinon le message d'erreur à renvoyer."""
+    book_id = str(data.get("book_id") or "").strip()
+    format_id = str(data.get("format_id") or "").strip()
+    if not book_id or not format_id or "," in format_id:
+        return "Demande de paiement invalide."
+    try:
+        amount = float(data.get("amount"))
+    except (TypeError, ValueError):
+        return "Montant invalide."
+    state, price = _expected_price(conn, book_id, format_id)
+    if state == "skip":
+        print("Prix non vérifié : colonnes de prix introuvables dans la table books")
+        return None
+    if state == "unknown_book":
+        return "Livre introuvable."
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        return "Livre indisponible."
+    if price <= 0:
+        return "Ce format n'est pas disponible."
+    if abs(amount - price) > 0.5:
+        return "Le prix de ce livre a changé. Rechargez la page et recommencez."
+    return None
+
+
 def _authors_mod():
     return sys.modules.get("authors")
 
@@ -216,24 +268,37 @@ def register(app, get_db, require_admin):
     @app.before_request
     def ngu_capture_delivery():
         try:
+            if request.method == "POST" and request.path == "/create-card-payment":
+                return jsonify({"error": "Le paiement par carte n'est pas disponible."}), 410
             if request.method == "POST" and request.path == "/create-payment":
                 data = request.get_json(silent=True) or {}
+                conn = get_db()
+                try:
+                    problem = check_price(conn, data)
+                finally:
+                    conn.close()
+                if problem:
+                    return jsonify({"error": problem}), 400
                 ref = str(data.get("client_reference") or "").strip()
+                conn = get_db()
+                method = str(data.get("payment_method") or "").strip().lower()
+                if ref and method in PAYMENT_METHODS:
+                    conn.execute("INSERT OR IGNORE INTO order_payment (reference, method) VALUES (?, ?)", (ref[:120], method))
                 delivery = data.get("delivery")
                 if ref and isinstance(delivery, dict):
                     values = {k: str(delivery.get(k) or "").strip()[:MAX_LEN] for k in DELIVERY_FIELDS}
                     if any(values.values()):
-                        conn = get_db()
+                        # La première saisie gagne : on ne réécrit pas une commande existante
                         conn.execute(
                             """INSERT OR IGNORE INTO order_delivery
                                (reference, first_name, last_name, phone, address, district, city, country, created_at)
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (ref[:120], *[values[k] for k in DELIVERY_FIELDS], time.time()),
                         )
-                        conn.commit()
-                        conn.close()
+                conn.commit()
+                conn.close()
         except Exception as e:
-            print(f"Erreur enregistrement coordonnées: {e}")
+            print(f"Erreur contrôle de la commande: {e}")
         return None
 
     @app.after_request
@@ -699,3 +764,29 @@ def register(app, get_db, require_admin):
         conn.commit()
         conn.close()
         return jsonify({"status": "ok"})
+
+    # ── Abonnés à la newsletter ───────────────────────────────────
+
+    @app.route("/api/admin/v2/subscribers", methods=["GET"])
+    @require_admin
+    def ngu_v2_subscribers():
+        conn = get_db()
+        if not _has_table(conn, "newsletter_subscribers"):
+            conn.close()
+            return jsonify({"items": [], "total": 0})
+        cols = _cols(conn, "newsletter_subscribers")
+        email_col = next((c for c in cols if "email" in c.lower()), None)
+        date_col = next((c for c in cols if any(k in c.lower() for k in ("created", "date", "subscribed", "updated"))), None)
+        if not email_col:
+            conn.close()
+            return jsonify({"items": [], "total": 0})
+        date_sql = f"CAST({date_col} AS REAL)" if date_col else "0"
+        rows = conn.execute(
+            f"SELECT {email_col} AS email, {date_sql} AS t FROM newsletter_subscribers ORDER BY t DESC, email"
+        ).fetchall()
+        conn.close()
+        items = []
+        for r in rows:
+            t = r["t"] or 0
+            items.append({"email": r["email"], "date": _iso(t) if t > 1e9 else ""})
+        return jsonify({"items": items, "total": len(items)})
