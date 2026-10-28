@@ -69,6 +69,7 @@ export default function Dashboard() {
         <Stat label="Livraisons à faire" value={d.orders.to_deliver} />
       </Panel>
       <p className="text-xs text-[#7B8478] mb-10 px-1">
+        {d.submissions_new > 0 && <><Link to="/admin/propositions" className="text-[#8A5F1F] font-medium hover:underline">{d.submissions_new} proposition{d.submissions_new > 1 ? 's' : ''} à lire</Link> · </>}
         {d.orders.pending} en attente de paiement
         {d.orders.refunded > 0 && <> · {d.orders.refunded} remboursée{d.orders.refunded > 1 ? 's' : ''}</>}
         {d.authors_due ? <> · {fcfa(d.authors_due)} à verser aux auteurs</> : null}

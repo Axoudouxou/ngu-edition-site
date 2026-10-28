@@ -21,6 +21,20 @@ export async function upload(path, file) {
   return data;
 }
 
+/** Télécharge un fichier protégé par le mot de passe admin. */
+export async function downloadFile(path, filename) {
+  const res = await adminFetch(path);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export const fcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 
 export const fmtDate = (iso) =>

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SubmissionForm from '@/components/publish/SubmissionForm';
 
 const steps = [
   {
-    title: 'Vous nous présentez votre livre',
-    text: 'Écrivez-nous avec le titre, un court résumé et votre fichier. Nous revenons vers vous pour en discuter.',
+    title: 'Vous nous envoyez votre livre',
+    text: 'Remplissez le formulaire ci-dessus avec vos coordonnées et votre document. Nous revenons vers vous pour en discuter.',
   },
   {
     title: 'Nous le mettons en vente',
@@ -28,7 +29,16 @@ export default function PublierAvecNGU() {
           La librairie NGU accueille les livres de NGU Édition, ceux d’autres maisons d’édition et ceux d’auteurs qui veulent être lus.
         </p>
 
-        <ol className="mt-20 space-y-12 border-t border-border/60 pt-12">
+        <section id="proposer" className="mt-14 rounded-2xl border border-border/60 bg-white p-6 md:p-10">
+          <h2 className="font-serif text-2xl md:text-3xl text-primary mb-2">Proposer mon livre</h2>
+          <p className="text-foreground/70 leading-relaxed mb-8">
+            Renseignez vos coordonnées et joignez votre livre ou un extrait au format PDF. Nous vous répondons à l'adresse indiquée.
+          </p>
+          <SubmissionForm />
+        </section>
+
+        <h2 className="font-serif text-2xl md:text-3xl text-primary mt-20 mb-2">Comment ça se passe</h2>
+        <ol className="mt-8 space-y-12">
           {steps.map((s, i) => (
             <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-6">
               <span className="font-serif text-4xl text-[#8A6A2A] leading-none">{i + 1}</span>
@@ -44,19 +54,11 @@ export default function PublierAvecNGU() {
           Les conditions financières sont précisées dans le contrat que nous signons ensemble.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <Link
-            to="/contact"
-            className="inline-block bg-primary text-primary-foreground text-sm font-medium px-7 py-3.5 rounded-full hover:bg-primary/90 transition-colors"
-          >
-            Nous écrire
-          </Link>
-          <Link
-            to="/auteur"
-            className="text-sm font-medium text-primary border-b border-primary pb-1 hover:text-primary/70 hover:border-primary/70 transition-colors"
-          >
+        <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm">
+          <Link to="/auteur" className="font-medium text-primary border-b border-primary pb-1 hover:text-primary/70 hover:border-primary/70 transition-colors">
             Déjà publié chez nous ? Mon espace auteur
           </Link>
+          <Link to="/contact" className="text-foreground/70 hover:text-primary underline underline-offset-4">Une question ? Écrivez-nous</Link>
         </div>
       </div>
     </div>

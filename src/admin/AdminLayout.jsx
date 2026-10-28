@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BarChart3, BookOpen, FileText, LayoutDashboard, LogOut, Mail, Menu, Package, Settings, ShoppingBag, Users, X,
+  BarChart3, BookOpen, FileText, Inbox, LayoutDashboard, LogOut, Mail, Menu, Package, Settings, ShoppingBag, Users, X,
 } from 'lucide-react';
 import { clearAdminToken, isAdminLoggedIn } from '@/lib/adminAuth';
 
 const NAV = [
   { to: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
   { to: '/admin/commandes', label: 'Commandes', icon: ShoppingBag },
+  { to: '/admin/propositions', label: 'Propositions', icon: Inbox },
   { to: '/admin/catalogue', label: 'Catalogue', icon: BookOpen },
   { to: '/admin/stock', label: 'Stock', icon: Package },
   { to: '/admin/auteurs', label: 'Auteurs et partenaires', icon: Users },
