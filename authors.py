@@ -67,6 +67,13 @@ def init_tables(get_db):
             paid_at REAL NOT NULL,
             note TEXT NOT NULL DEFAULT ''
         );
+        CREATE TABLE IF NOT EXISTS order_admin (
+            reference TEXT PRIMARY KEY,
+            fulfillment TEXT NOT NULL DEFAULT '',
+            refunded INTEGER NOT NULL DEFAULT 0,
+            refunded_at REAL,
+            note TEXT NOT NULL DEFAULT ''
+        );
         CREATE TABLE IF NOT EXISTS book_publishers (
             book_id TEXT PRIMARY KEY,
             publisher TEXT NOT NULL
@@ -114,6 +121,7 @@ def sync_sales(conn):
           AND o.format_id NOT LIKE '%,%'
           AND CAST(o.updated_at AS REAL) >= ab.assigned_at
           AND NOT EXISTS (SELECT 1 FROM author_sales s WHERE s.reference = o.reference)
+          AND NOT EXISTS (SELECT 1 FROM order_admin oa WHERE oa.reference = o.reference AND oa.refunded = 1)
         """
     ).fetchall()
     for r in rows:
@@ -338,9 +346,12 @@ def register_author_routes(app, get_db, require_admin):
         sync_sales(conn)
         totals = author_totals(conn, author["id"])
 
+        bcols = [r["name"] for r in conn.execute("PRAGMA table_info(books)")]
+        price_col = next((c for c in bcols if "ebook" in c.lower() and "price" in c.lower()), None)
+        price_sql = f"b.{price_col}" if price_col else "NULL"
         books = conn.execute(
-            """SELECT ab.book_id, COALESCE(b.title, ab.book_id) AS title,
-                      b.ebook_price AS price,
+            f"""SELECT ab.book_id, COALESCE(b.title, ab.book_id) AS title,
+                      {price_sql} AS price,
                       (SELECT COUNT(*) FROM author_sales s
                          WHERE s.book_id = ab.book_id AND s.author_id = ab.author_id AND s.voided = 0) AS sold,
                       (SELECT COALESCE(SUM(author_share), 0) FROM author_sales s
