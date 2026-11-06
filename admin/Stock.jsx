@@ -50,7 +50,7 @@ function Row({ book, format, entry, sold, defaultThreshold, onSaved }) {
   return (
     <tr>
       <td className="px-4 py-3"><p className="font-medium">{book.title}</p><p className="text-xs text-[#7B8478]">{format.label}</p></td>
-      <td className="px-4 py-3 text-right"><span className="font-serif text-2xl text-[#20392D]">{known ? Math.max(left, 0) : '—'}</span></td>
+      <td className="px-4 py-3 text-right"><span className="font-editorial text-2xl text-[#20392D]">{known ? Math.max(left, 0) : '—'}</span></td>
       <td className="px-4 py-3">{badge}</td>
       <td className="px-4 py-3 w-32"><input type="number" min="0" aria-label="Quantité en stock" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="0" /></td>
       <td className="px-4 py-3 w-28"><input type="number" min="0" aria-label="Seuil d'alerte" className={inputCls} value={threshold} onChange={(e) => setThreshold(e.target.value)} /></td>

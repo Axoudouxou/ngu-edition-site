@@ -36,7 +36,7 @@ export default function AboutSection() {
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-primary leading-tight">
                 Never Give Up Édition
               </h2>
-              <p className="font-sans text-lg italic text-muted-foreground mt-2">
+              <p className="font-serif text-lg italic text-muted-foreground mt-2">
                 Une maison d'édition née pour la jeunesse
               </p>
             </div>

@@ -29,7 +29,7 @@ export default function NotreEngagement() {
           >
             <p className="text-accent-text text-xs font-semibold tracking-widest uppercase mb-5">Never Give Up Édition</p>
             <h1 className="font-serif text-5xl md:text-6xl font-semibold text-primary mb-6">Notre engagement</h1>
-            <p className="font-sans text-xl md:text-2xl italic text-muted-foreground">
+            <p className="font-serif text-xl md:text-2xl italic text-muted-foreground">
               Ce qui nous anime, et les moments qui le racontent.
             </p>
           </motion.div>
@@ -72,7 +72,7 @@ export default function NotreEngagement() {
                 className="bg-primary rounded-2xl px-10 py-10 text-primary-foreground"
               >
                 <p className="text-secondary text-xs font-semibold tracking-widest uppercase mb-4">{card.title}</p>
-                <p className="font-sans text-xl md:text-2xl leading-relaxed">{card.text}</p>
+                <p className="font-serif text-xl md:text-2xl leading-relaxed">{card.text}</p>
               </motion.div>
             ))}
           </div>

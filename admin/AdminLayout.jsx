@@ -25,7 +25,7 @@ function Menu_({ onNavigate }) {
   return (
     <div className="flex flex-col h-full">
       <div className="px-6 pt-7 pb-8">
-        <p className="font-serif text-2xl font-semibold text-[#F7F6F2] leading-none">NGU Édition</p>
+        <p className="font-editorial text-2xl font-medium text-[#F7F6F2] leading-none">NGU Édition</p>
         <p className="text-[10px] tracking-[0.16em] text-[#C99A52] mt-2">ADMINISTRATION</p>
       </div>
       <nav className="flex-1 text-sm">
@@ -71,7 +71,7 @@ export default function AdminLayout() {
       </aside>
 
       <div className="md:hidden sticky top-0 z-40 bg-[#20392D] flex items-center justify-between px-4 h-14">
-        <p className="font-serif text-xl text-[#F7F6F2]">NGU Édition</p>
+        <p className="font-editorial text-xl text-[#F7F6F2]">NGU Édition</p>
         <button onClick={() => setOpen(true)} aria-label="Ouvrir le menu" className="text-[#F7F6F2]"><Menu className="w-6 h-6" /></button>
       </div>
       {open && (

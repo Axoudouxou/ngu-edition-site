@@ -63,7 +63,7 @@ export default function AuthorSection() {
             {/* Quote */}
             <div className="relative bg-white border-l-4 border-accent rounded-r-xl px-6 py-5 shadow-sm">
               <Quote className="absolute -top-3 -left-3 w-6 h-6 text-accent-text fill-accent" />
-              <p className="font-sans text-lg italic text-primary/80 leading-relaxed">
+              <p className="font-serif text-lg italic text-primary/80 leading-relaxed">
                 "Ce livre, je l'ai écrit pour celui que j'étais avant — et pour toi, qui en as besoin aujourd'hui."
               </p>
               <p className="mt-3 text-sm font-medium text-muted-foreground">— Sohan Adou</p>

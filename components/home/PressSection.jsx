@@ -67,7 +67,7 @@ export default function PressSection() {
           className="relative max-w-2xl mx-auto bg-white border border-border/60 rounded-2xl px-10 py-9 shadow-sm text-center"
         >
           <Quote className="w-8 h-8 text-secondary/60 mx-auto mb-4" />
-          <p className="font-sans text-xl italic text-foreground/75 leading-relaxed">
+          <p className="font-serif text-xl italic text-foreground/75 leading-relaxed">
             "{quoteText}"
           </p>
           <p className="mt-5 text-sm font-semibold text-accent-text">— {quoteAuthor}</p>

@@ -41,7 +41,7 @@ export default function LibrairiesSection() {
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-primary mb-3">
             Retrouvez nos livres à Abidjan
           </h2>
-          <p className="font-sans text-lg italic text-muted-foreground">Disponibles dans ces librairies</p>
+          <p className="font-serif text-lg italic text-muted-foreground">Disponibles dans ces librairies</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">

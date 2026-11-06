@@ -56,7 +56,7 @@ export default function TestimonialsSection() {
               className="relative bg-white border border-border/50 rounded-2xl px-8 py-10 shadow-sm flex flex-col"
             >
               <span className="font-serif text-7xl leading-none text-secondary/40 absolute -top-2 left-6 select-none">"</span>
-              <p className="font-sans text-lg italic text-foreground/75 leading-relaxed mt-6 flex-1">
+              <p className="font-serif text-lg italic text-foreground/75 leading-relaxed mt-6 flex-1">
                 {t.text}
               </p>
               <p className="mt-6 text-sm font-semibold text-accent-text tracking-wide">— {t.author}</p>

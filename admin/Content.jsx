@@ -180,7 +180,7 @@ export default function Content() {
           </nav>
 
           <div>
-            <h2 className="font-serif text-2xl font-semibold text-[#20392D] mb-6">{group.label}</h2>
+            <h2 className="font-editorial text-2xl font-medium text-[#20392D] mb-6">{group.label}</h2>
             <ErrorNote>{error || state.error}</ErrorNote>
             <div className="space-y-5 mb-8">
               {(group.keys || []).map((key) => (

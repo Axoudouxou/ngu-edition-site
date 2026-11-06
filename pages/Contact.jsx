@@ -34,7 +34,7 @@ export default function Contact() {
         className="text-center py-16 md:py-24"
       >
         <h1 className="font-serif text-5xl md:text-6xl font-semibold text-primary mb-4">Contact</h1>
-        <p className="font-sans text-lg md:text-xl italic text-foreground/75">Une question, un témoignage, une commande ? On vous lit avec joie.</p>
+        <p className="font-serif text-lg md:text-xl italic text-foreground/75">Une question, un témoignage, une commande ? On vous lit avec joie.</p>
       </motion.div>
 
       {/* Content */}

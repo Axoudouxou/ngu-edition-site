@@ -35,7 +35,7 @@ export function Page({ title, subtitle, actions, children }) {
     <div className="px-5 sm:px-8 py-8 md:py-10 max-w-6xl mx-auto">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-serif text-3xl md:text-4xl font-semibold text-[#20392D]">{title}</h1>
+          <h1 className="font-editorial text-3xl md:text-4xl font-medium text-[#20392D]">{title}</h1>
           {subtitle && <p className="text-sm text-[#6B7468] mt-1.5 max-w-2xl">{subtitle}</p>}
         </div>
         {actions && <div className="flex items-center gap-3">{actions}</div>}
@@ -159,7 +159,7 @@ export function Drawer({ open, onClose, title, children, wide = false }) {
       <div className="absolute inset-0 bg-[#20392D]/40" onClick={onClose} />
       <aside className={`relative w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} bg-white h-full overflow-y-auto shadow-xl`} role="dialog" aria-label={title}>
         <div className="sticky top-0 bg-white border-b border-[#E4E1D8] px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="font-serif text-2xl font-semibold text-[#20392D]">{title}</h2>
+          <h2 className="font-editorial text-2xl font-medium text-[#20392D]">{title}</h2>
           <button onClick={onClose} aria-label="Fermer" className="text-[#6B7468] hover:text-[#20392D]"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-6">{children}</div>
@@ -189,7 +189,7 @@ export function Stat({ label, value, hint, strong }) {
   return (
     <div className="px-5 py-4">
       <p className="text-[10px] uppercase tracking-[0.12em] text-[#7B8478] mb-1.5">{label}</p>
-      <p className={`font-serif ${strong ? 'text-4xl' : 'text-3xl'} font-semibold text-[#20392D] leading-none`}>{value}</p>
+      <p className={`font-editorial ${strong ? 'text-4xl' : 'text-3xl'} font-medium text-[#20392D] leading-none`}>{value}</p>
       {hint && <p className="text-xs text-[#7B8478] mt-2">{hint}</p>}
     </div>
   );

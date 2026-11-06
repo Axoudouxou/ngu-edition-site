@@ -31,7 +31,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center px-6 font-sans">
       <div className="w-full max-w-sm">
-        <p className="font-serif text-4xl font-semibold text-[#20392D] text-center">NGU Édition</p>
+        <p className="font-editorial text-4xl font-medium text-[#20392D] text-center">NGU Édition</p>
         <p className="text-[10px] tracking-[0.16em] text-[#8A5F1F] text-center mt-2 mb-10">ADMINISTRATION</p>
         <form onSubmit={handleSubmit} className="bg-white border border-[#E4E1D8] rounded-lg p-7 space-y-4">
           <label className="block">

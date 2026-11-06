@@ -37,7 +37,7 @@ function AuthorDetail({ authorId, allBooks, onChanged }) {
       <ErrorNote>{error}</ErrorNote>
       <div className="grid grid-cols-3 gap-px bg-[#E4E1D8] border border-[#E4E1D8] rounded-lg overflow-hidden text-center">
         {[['Gagné', d.author.earned], ['Déjà versé', d.author.paid], ['Reste à verser', d.author.balance]].map(([l, v]) => (
-          <div key={l} className="bg-white py-3"><p className="text-[10px] uppercase tracking-[0.1em] text-[#7B8478]">{l}</p><p className="font-serif text-xl text-[#20392D]">{fcfa(v)}</p></div>
+          <div key={l} className="bg-white py-3"><p className="text-[10px] uppercase tracking-[0.1em] text-[#7B8478]">{l}</p><p className="font-editorial text-xl text-[#20392D]">{fcfa(v)}</p></div>
         ))}
       </div>
 

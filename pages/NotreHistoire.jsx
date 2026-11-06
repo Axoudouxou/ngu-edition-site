@@ -21,7 +21,7 @@ export default function NotreHistoire() {
             <h1 className="font-serif text-5xl md:text-6xl font-semibold text-primary mb-6">
               {content.about_title || 'Notre histoire'}
             </h1>
-            <p className="font-sans text-xl md:text-2xl italic text-muted-foreground">
+            <p className="font-serif text-xl md:text-2xl italic text-muted-foreground">
               {content.about_tagline || 'Une maison d\'édition. Une mission. Une génération.'}
             </p>
           </motion.div>
@@ -61,7 +61,7 @@ export default function NotreHistoire() {
               <div>
                 <p className="text-accent-text text-xs font-semibold tracking-widest uppercase mb-3">Le fondateur</p>
                 <h2 className="font-serif text-3xl md:text-4xl font-semibold text-primary">Sohan Adou</h2>
-                <p className="font-sans text-lg italic text-primary/80 mt-1">
+                <p className="font-serif text-lg italic text-primary/80 mt-1">
                  Auteur ivoirien · Never Give Up Édition
                 </p>
               </div>
