@@ -70,7 +70,7 @@ const norm = (s) =>
     .replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
 
 const TEXT_COLUMNS = {
-  catalogue: 'catalogue', rubrique: 'rubrique', sous_rubrique: 'sous rubrique', collection: 'collection',
+  author: 'auteur', catalogue: 'catalogue', rubrique: 'rubrique', sous_rubrique: 'sous rubrique', collection: 'collection',
   level: 'niveau', audience: 'public', approval: 'agrement', also_in: 'aussi classe dans',
 };
 

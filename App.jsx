@@ -36,7 +36,6 @@ import AdminReports from '@/admin/Reports';
 import AdminNewsletter from '@/admin/Newsletter';
 import AdminSubmissions from '@/admin/Submissions';
 import AdminOnOrder from '@/admin/OnOrder';
-import Catalogue from '@/pages/Catalogue';
 import AdminSettings from '@/admin/Settings';
 import AuthorLogin from '@/pages/AuthorLogin';
 import AuthorVerify from '@/pages/AuthorVerify';
@@ -66,7 +65,7 @@ function App() {
               <Route path="/politique-livraison" element={<PolitiqueLivraison />} />
               <Route path="/paiement-succes" element={<PaymentSuccess />} />
               <Route path="/paiement-echec" element={<PaymentFailed />} />
-              <Route path="/catalogue" element={<Catalogue />} />
+              <Route path="/catalogue" element={<Navigate to="/boutique?onglet=librairie" replace />} />
               <Route path="*" element={<PageNotFound />} />
               <Route path="/auteur" element={<AuthorLogin />} />
               <Route path="/auteur/connexion" element={<AuthorVerify />} />

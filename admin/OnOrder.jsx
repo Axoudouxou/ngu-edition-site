@@ -1,8 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { CheckCircle, Loader2, Upload } from 'lucide-react';
 import { Badge, Chips, ErrorNote, Field, Page, Panel, SearchBox, Spinner, Table, btn, inputCls, useLoad, Empty } from './ui';
-import { api, fcfa } from './api';
+import { unzipSync } from 'fflate';
+import { api, fcfa, shrinkImage, uploadMany } from './api';
 import { readXlsx, sheetToCatalogue } from './xlsxRead';
+
+const API = 'https://payment.nguedition.com';
 
 const readBuffer = (file) =>
   file.arrayBuffer
@@ -124,6 +127,124 @@ function ImportPanel({ onDone }) {
   );
 }
 
+function CoversPanel({ onDone }) {
+  const input = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+
+  const choose = async (e) => {
+    const picked = Array.from(e.target.files || []);
+    if (!picked.length) return;
+    setBusy(true); setError(''); setResult(null); setProgress('Lecture des fichiers…');
+    try {
+      const images = [];
+      for (const file of picked) {
+        if (/\.zip$/i.test(file.name)) {
+          const entries = unzipSync(new Uint8Array(await readBuffer(file)));
+          for (const [path, bytes] of Object.entries(entries)) {
+            const name = path.split('/').pop();
+            if (!name || name.startsWith('.') || path.includes('__MACOSX') || !/\.(jpe?g|png|webp)$/i.test(name)) continue;
+            const type = /png$/i.test(name) ? 'image/png' : /webp$/i.test(name) ? 'image/webp' : 'image/jpeg';
+            images.push(new File([bytes], name, { type }));
+          }
+        } else {
+          images.push(file);
+        }
+      }
+      if (images.length === 0) throw new Error("Aucune image trouvée. Envoie des photos JPEG, PNG ou WebP, ou un ZIP qui en contient, nommées d'après le code du livre.");
+      let saved = 0; const unknown = []; const invalid = [];
+      for (let i = 0; i < images.length; i += 12) {
+        setProgress(`Envoi ${Math.min(i + 12, images.length)} / ${images.length}…`);
+        const batch = await Promise.all(images.slice(i, i + 12).map((f) => shrinkImage(f, 700, 0.85)));
+        const r = await uploadMany('/api/admin/v2/catalog/covers', batch);
+        saved += r.saved; unknown.push(...r.unknown); invalid.push(...r.invalid);
+      }
+      setResult({ total: images.length, saved, unknown, invalid });
+      onDone();
+    } catch (err) {
+      setError(err.message || 'Envoi impossible.');
+    } finally {
+      setBusy(false); setProgress('');
+      if (input.current) input.current.value = '';
+    }
+  };
+
+  return (
+    <Panel className="p-5 mb-8">
+      <input ref={input} type="file" accept=".zip,image/jpeg,image/png,image/webp" multiple className="sr-only" aria-label="Photos des couvertures" onChange={choose} />
+      <ErrorNote>{error}</ErrorNote>
+      <div className="flex flex-wrap items-center gap-4">
+        <button className={btn.ghost} disabled={busy} onClick={() => input.current?.click()}>
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Ajouter des couvertures
+        </button>
+        <p className="text-sm text-[#6B7468] max-w-xl">
+          Choisis des photos, ou un fichier ZIP, <strong>nommées d'après le code du livre</strong> (par exemple 1PRE2084.jpg). Elles remplacent les couvertures générées.
+        </p>
+      </div>
+      {busy && progress && <p className="text-sm mt-3">{progress}</p>}
+      {result && (
+        <div className="text-sm mt-4 space-y-1">
+          <p><strong>{result.saved}</strong> couverture{result.saved > 1 ? 's' : ''} ajoutée{result.saved > 1 ? 's' : ''} sur {result.total} image{result.total > 1 ? 's' : ''}.</p>
+          {result.unknown.length > 0 && <p className="text-[#9B2C2C]">{result.unknown.length} fichier{result.unknown.length > 1 ? 's' : ''} ne correspond{result.unknown.length > 1 ? 'ent' : ''} à aucun code : {result.unknown.slice(0, 8).join(', ')}{result.unknown.length > 8 ? '…' : ''}</p>}
+          {result.invalid.length > 0 && <p className="text-[#9B2C2C]">Refusées : {result.invalid.slice(0, 5).map((i) => `${i.name} (${i.reason})`).join(' ; ')}</p>}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function DeletePanel({ total, onDone }) {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(null);
+
+  const run = async () => {
+    setBusy(true); setError('');
+    try {
+      const r = await api('/api/admin/v2/catalog/delete-all', { method: 'POST', body: { confirm: typed } });
+      setDone(r.deleted); setOpen(false); setTyped(''); onDone();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (done !== null && total === 0) {
+    return <p className="mt-10 text-sm text-[#6B7468]">Catalogue supprimé : {done} référence{done > 1 ? 's' : ''} retirée{done > 1 ? 's' : ''}.</p>;
+  }
+  if (total === 0) return null;
+  return (
+    <Panel className="p-5 mt-10 border-[#E8CFCF]">
+      <h3 className="font-medium mb-1">Supprimer le catalogue</h3>
+      <p className="text-sm text-[#6B7468] mb-4 max-w-xl">
+        Retire définitivement les {total} références importées et leurs couvertures. Tes livres NGU, les commandes et les auteurs ne sont pas touchés.
+        Tu pourras réimporter un fichier ensuite.
+      </p>
+      {!open ? (
+        <button className={btn.danger} onClick={() => setOpen(true)}>Supprimer tout le catalogue</button>
+      ) : (
+        <div className="space-y-3 max-w-sm">
+          <ErrorNote>{error}</ErrorNote>
+          <Field label="Pour confirmer, tape SUPPRIMER">
+            <input className={inputCls} value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" aria-label="Confirmation de suppression" />
+          </Field>
+          <div className="flex gap-3">
+            <button className={btn.danger} disabled={busy || typed !== 'SUPPRIMER'} onClick={run}>
+              {busy && <Loader2 className="w-4 h-4 animate-spin inline mr-1" />}Supprimer définitivement
+            </button>
+            <button className={btn.ghost} disabled={busy} onClick={() => { setOpen(false); setTyped(''); setError(''); }}>Annuler</button>
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 export default function OnOrder() {
   const state = useLoad(() => api('/api/admin/v2/catalog'));
   const [q, setQ] = useState('');
@@ -151,6 +272,7 @@ export default function OnOrder() {
   return (
     <Page title="Sur commande" subtitle="Le catalogue d'un éditeur partenaire. Ces livres ne s'achètent pas en ligne : le client envoie une demande sur WhatsApp depuis la page Catalogue du site.">
       <ImportPanel onDone={state.reload} />
+      <CoversPanel onDone={state.reload} />
       <ErrorNote>{state.error || error}</ErrorNote>
       <div className="flex flex-wrap items-center gap-4 mb-5">
         <Chips value={view} onChange={(v) => { setView(v); setShown(50); }} options={[
@@ -165,8 +287,8 @@ export default function OnOrder() {
           <Table head={['Code', 'Titre', 'Classement', "Prix d'achat", 'Prix de vente', 'Site']}>
             {list.slice(0, shown).map((i) => (
               <tr key={i.code}>
-                <td className="px-4 py-3 text-xs text-[#6B7468] whitespace-nowrap">{i.code}</td>
-                <td className="px-4 py-3"><p className="font-medium">{i.title}</p><p className="text-xs text-[#7B8478]">{i.publisher}</p></td>
+                <td className="px-4 py-3 text-xs text-[#6B7468] whitespace-nowrap"><span className="inline-flex items-center gap-2">{i.cover ? <img src={`${API}/api/catalog/cover/${encodeURIComponent(i.code)}`} alt="" loading="lazy" className="w-6 h-9 object-cover rounded-sm" /> : <span className="w-6 h-9 rounded-sm bg-[#EDEAE0]" />}{i.code}</span></td>
+                <td className="px-4 py-3"><p className="font-medium">{i.title}</p><p className="text-xs text-[#7B8478]">{i.author ? `${i.author} · ` : ''}{i.publisher}</p></td>
                 <td className="px-4 py-3 text-xs text-[#6B7468]">{[i.rubrique, i.sous_rubrique || i.collection, i.level].filter(Boolean).join(' · ')}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-[#6B7468]">{fcfa(i.supplier_price)}</td>
                 <td className="px-4 py-3 whitespace-nowrap font-medium">{fcfa(i.price)}</td>
@@ -184,6 +306,7 @@ export default function OnOrder() {
           </div>
         </>
       )}
+      <DeletePanel total={counts.total} onDone={state.reload} />
     </Page>
   );
 }

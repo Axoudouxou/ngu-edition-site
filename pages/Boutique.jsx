@@ -1,11 +1,32 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
+import Librairie from '@/components/librairie/Librairie';
 import { useBooks } from '@/hooks/useBooks';
 import BookCard from '@/components/products/BookCard';
 import { motion } from 'framer-motion';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { isNguBook } from '@/lib/publisher';
 
+const TABS = [{ id: 'ngu', label: 'NGU Store' }, { id: 'librairie', label: 'Librairie' }];
+
+function TabSwitch({ value, onChange }) {
+  return (
+    <div role="tablist" aria-label="Boutique" className="relative inline-flex rounded-full bg-[#D8D0C0] p-1">
+      <span aria-hidden="true" className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-primary transition-transform duration-300 ${value === 'librairie' ? 'translate-x-full' : ''}`} />
+      {TABS.map((t) => (
+        <button key={t.id} type="button" role="tab" aria-selected={value === t.id} onClick={() => onChange(t.id)}
+          className={`relative z-10 min-w-[120px] sm:min-w-[140px] px-6 py-2.5 rounded-full font-serif font-semibold text-[15px] transition-colors duration-300 ${value === t.id ? 'text-primary-foreground' : 'text-primary/80'}`}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function Boutique() {
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('onglet') === 'librairie' ? 'librairie' : 'ngu';
+  const changeTab = (id) => setParams(id === 'librairie' ? { onglet: 'librairie' } : {}, { replace: true });
   const { region, loading, setManualOverride } = useGeoRegion();
   const { books } = useBooks();
 
@@ -24,16 +45,10 @@ export default function Boutique() {
   return (
     <div>
     <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-14"
-      >
-        <p className="text-accent-text text-sm font-semibold tracking-widest uppercase mb-3">Tous nos titres</p>
-        <h1 className="font-serif text-4xl md:text-5xl font-semibold text-primary">La bibliothèque NGU</h1>
-      </motion.div>
+      <h1 className="sr-only">Boutique</h1>
+      <div className="flex justify-center mb-12"><TabSwitch value={tab} onChange={changeTab} /></div>
 
+      {tab === 'librairie' ? <Librairie /> : (<>
       {/* Books grid */}
       {partners.length === 0 ? (
         grid(books)
@@ -75,6 +90,7 @@ export default function Boutique() {
           )}
         </motion.div>
       )}
+      </>)}
     </div>
     </div>
   );

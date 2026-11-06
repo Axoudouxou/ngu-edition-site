@@ -46,6 +46,16 @@ export async function upload(path, file) {
   return data;
 }
 
+/** Envoie plusieurs fichiers d'un coup (champ « files »). */
+export async function uploadMany(path, files) {
+  const form = new FormData();
+  files.forEach((f) => form.append('files', f, f.name));
+  const res = await adminFetch(path, { method: 'POST', body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+  return data;
+}
+
 /** Télécharge un fichier protégé par le mot de passe admin. */
 export async function downloadFile(path, filename) {
   const res = await adminFetch(path);

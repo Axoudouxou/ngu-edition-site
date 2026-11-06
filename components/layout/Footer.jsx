@@ -13,7 +13,6 @@ const WhatsAppIcon = () => (
 const navLinks = [
   { label: 'Accueil', to: '/' },
   { label: 'Boutique', to: '/boutique' },
-  { label: 'Catalogue', to: '/catalogue' },
   { label: 'Notre histoire', to: '/notre-histoire' },
   { label: 'Notre engagement', to: '/notre-engagement' },
   { label: 'Contact', to: '/contact' },
