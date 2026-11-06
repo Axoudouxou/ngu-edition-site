@@ -4,16 +4,34 @@
 - un import peut ajouter, modifier et retirer des références ; un aperçu précède toujours l'application ;
 - branché par authors.py, comme les autres modules.
 """
+import os
 import re
 import time
 
-from flask import jsonify, request
+from flask import jsonify, request, send_file
 
 MAX_ROWS = 5000
 MAX_BODY = 6 * 1024 * 1024
 CODE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,29}$")
-TEXT_FIELDS = ("catalogue", "rubrique", "sous_rubrique", "collection", "level", "audience", "approval", "also_in")
+MAX_COVER = 3 * 1024 * 1024
+MAX_COVER_BATCH = 24 * 1024 * 1024
+COVER_TYPES = ((b"\xff\xd8\xff", "jpg", "image/jpeg"), (b"\x89PNG\r\n\x1a\n", "png", "image/png"))
+TEXT_FIELDS = ("author", "catalogue", "rubrique", "sous_rubrique", "collection", "level", "audience", "approval", "also_in")
 COMPARED = ("title",) + TEXT_FIELDS + ("supplier_price", "price", "publisher")
+
+
+def covers_dir():
+    return os.environ.get("NGU_COVERS_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "catalog_covers")
+
+
+def sniff_cover(data):
+    """(extension, type mime) si le contenu est bien une image JPEG, PNG ou WebP ; sinon None."""
+    for magic, ext, mime in COVER_TYPES:
+        if data.startswith(magic):
+            return ext, mime
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "webp", "image/webp"
+    return None
 
 
 def init_tables(get_db):
@@ -40,6 +58,11 @@ def init_tables(get_db):
         );
         """
     )
+    have = {r["name"] for r in conn.execute("PRAGMA table_info(catalog_items)").fetchall()}
+    if "author" not in have:
+        conn.execute("ALTER TABLE catalog_items ADD COLUMN author TEXT NOT NULL DEFAULT ''")
+    if "cover" not in have:
+        conn.execute("ALTER TABLE catalog_items ADD COLUMN cover TEXT NOT NULL DEFAULT ''")
     conn.commit()
     conn.close()
 
@@ -87,11 +110,16 @@ def register(app, get_db, require_admin):
     def ngu_public_catalog():
         conn = get_db()
         rows = conn.execute(
-            """SELECT code, title, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in, price
+            """SELECT code, title, author, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in, price, cover
                FROM catalog_items WHERE active = 1 ORDER BY position, rowid"""
         ).fetchall()
         conn.close()
-        resp = jsonify({"items": [dict(r) for r in rows]})
+        items = []
+        for r in rows:
+            d = dict(r)
+            d["cover"] = f"/api/catalog/cover/{d['code']}" if d["cover"] else ""
+            items.append(d)
+        resp = jsonify({"items": items})
         resp.headers["Cache-Control"] = "public, max-age=300"
         return resp
 
@@ -161,14 +189,14 @@ def register(app, get_db, require_admin):
         now = time.time()
         for position, row in enumerate(good):
             conn.execute(
-                """INSERT INTO catalog_items (code, title, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in,
+                """INSERT INTO catalog_items (code, title, author, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in,
                                               supplier_price, price, active, position, updated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
-                   ON CONFLICT(code) DO UPDATE SET title=excluded.title, publisher=excluded.publisher, catalogue=excluded.catalogue, rubrique=excluded.rubrique,
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                   ON CONFLICT(code) DO UPDATE SET title=excluded.title, author=excluded.author, publisher=excluded.publisher, catalogue=excluded.catalogue, rubrique=excluded.rubrique,
                        sous_rubrique=excluded.sous_rubrique, collection=excluded.collection, level=excluded.level, audience=excluded.audience,
                        approval=excluded.approval, also_in=excluded.also_in, supplier_price=excluded.supplier_price, price=excluded.price,
                        active=1, position=excluded.position, updated_at=excluded.updated_at""",
-                (row["code"], row["title"], row["publisher"], row["catalogue"], row["rubrique"], row["sous_rubrique"], row["collection"], row["level"],
+                (row["code"], row["title"], row["author"], row["publisher"], row["catalogue"], row["rubrique"], row["sous_rubrique"], row["collection"], row["level"],
                  row["audience"], row["approval"], row["also_in"], row["supplier_price"], row["price"], position, now),
             )
         for code in removed_codes:
@@ -188,3 +216,104 @@ def register(app, get_db, require_admin):
         if cur.rowcount == 0:
             return jsonify({"error": "référence introuvable"}), 404
         return jsonify({"status": "ok"})
+
+    # ── Couvertures ───────────────────────────────────────────────────────────
+
+    @app.route("/api/catalog/cover/<code>", methods=["GET"])
+    def ngu_catalog_cover(code):
+        if not CODE_RE.match(code):
+            return jsonify({"error": "introuvable"}), 404
+        conn = get_db()
+        row = conn.execute("SELECT cover FROM catalog_items WHERE code = ? AND active = 1", (code,)).fetchone()
+        conn.close()
+        if not row or not row["cover"]:
+            return jsonify({"error": "introuvable"}), 404
+        path = os.path.join(covers_dir(), os.path.basename(row["cover"]))
+        if not os.path.exists(path):
+            return jsonify({"error": "introuvable"}), 404
+        mime = {"jpg": "image/jpeg", "png": "image/png", "webp": "image/webp"}.get(row["cover"].rsplit(".", 1)[-1], "application/octet-stream")
+        resp = send_file(path, mimetype=mime)
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+        return resp
+
+    @app.route("/api/admin/v2/catalog/covers", methods=["POST"])
+    @require_admin
+    def ngu_admin_catalog_covers():
+        """Reçoit des images nommées d'après le code du livre (1PRE2084.jpg) : une couverture par fichier."""
+        if request.content_length and request.content_length > MAX_COVER_BATCH + 1024 * 1024:
+            return jsonify({"error": "Envoi trop volumineux."}), 413
+        files = request.files.getlist("files")
+        if not files:
+            return jsonify({"error": "Aucun fichier."}), 400
+        conn = get_db()
+        codes = {r["code"].lower(): r["code"] for r in conn.execute("SELECT code FROM catalog_items").fetchall()}
+        os.makedirs(covers_dir(), mode=0o755, exist_ok=True)
+        saved, unknown, invalid = [], [], []
+        for f in files:
+            name = os.path.basename(f.filename or "")
+            stem = name.rsplit(".", 1)[0].strip()
+            code = codes.get(stem.lower())
+            if not code:
+                unknown.append(name)
+                continue
+            data = f.read(MAX_COVER + 1)
+            kind = sniff_cover(data)
+            if len(data) > MAX_COVER:
+                invalid.append({"name": name, "reason": "image trop lourde (3 Mo maximum)"})
+            elif not kind:
+                invalid.append({"name": name, "reason": "ce n'est pas une image JPEG, PNG ou WebP"})
+            else:
+                filename = f"{code}.{kind[0]}"
+                for old in os.listdir(covers_dir()):           # une seule couverture par livre
+                    if old.rsplit(".", 1)[0] == code and old != filename:
+                        os.remove(os.path.join(covers_dir(), old))
+                with open(os.path.join(covers_dir(), filename), "wb") as out:
+                    out.write(data)
+                conn.execute("UPDATE catalog_items SET cover = ?, updated_at = ? WHERE code = ?", (filename, time.time(), code))
+                saved.append(code)
+        conn.commit()
+        conn.close()
+        return jsonify({"saved": len(saved), "unknown": unknown[:50], "unknown_count": len(unknown), "invalid": invalid[:50], "invalid_count": len(invalid)})
+
+    @app.route("/api/admin/v2/catalog/<code>/cover", methods=["DELETE"])
+    @require_admin
+    def ngu_admin_catalog_cover_delete(code):
+        conn = get_db()
+        row = conn.execute("SELECT cover FROM catalog_items WHERE code = ?", (code,)).fetchone()
+        if row and row["cover"]:
+            try:
+                os.remove(os.path.join(covers_dir(), os.path.basename(row["cover"])))
+            except OSError:
+                pass
+            conn.execute("UPDATE catalog_items SET cover = '', updated_at = ? WHERE code = ?", (time.time(), code))
+            conn.commit()
+        conn.close()
+        return jsonify({"status": "ok"})
+
+    @app.route("/api/admin/v2/catalog/delete-all", methods=["POST"])
+    @require_admin
+    def ngu_admin_catalog_delete_all():
+        """Supprime définitivement les références du catalogue (toutes, ou celles d'une maison d'édition) et leurs couvertures."""
+        data = request.get_json(silent=True) or {}
+        if data.get("confirm") != "SUPPRIMER":
+            return jsonify({"error": "Confirmation manquante : tape SUPPRIMER."}), 400
+        publisher = _text(data.get("publisher"), 80)
+        conn = get_db()
+        if publisher:
+            codes = [r["code"] for r in conn.execute("SELECT code FROM catalog_items WHERE publisher = ?", (publisher,)).fetchall()]
+            conn.execute("DELETE FROM catalog_items WHERE publisher = ?", (publisher,))
+        else:
+            codes = [r["code"] for r in conn.execute("SELECT code FROM catalog_items").fetchall()]
+            conn.execute("DELETE FROM catalog_items")
+        conn.commit()
+        conn.close()
+        folder = covers_dir()
+        if os.path.isdir(folder):
+            wanted = set(codes)
+            for name in os.listdir(folder):
+                if name.rsplit(".", 1)[0] in wanted:
+                    try:
+                        os.remove(os.path.join(folder, name))
+                    except OSError:
+                        pass
+        return jsonify({"deleted": len(codes)})

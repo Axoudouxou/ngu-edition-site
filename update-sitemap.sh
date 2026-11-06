@@ -6,7 +6,7 @@ API="${API:-https://payment.nguedition.com}"
 python3 - "$WEB" "$API" <<'PY'
 import json, sys, urllib.request
 web, api = sys.argv[1], sys.argv[2]
-pages = ["/", "/boutique", "/catalogue", "/notre-histoire", "/notre-engagement", "/contact", "/publier",
+pages = ["/", "/boutique", "/notre-histoire", "/notre-engagement", "/contact", "/publier",
          "/mentions-legales", "/confidentialite", "/cgv", "/cgu", "/politique-remboursement", "/politique-livraison"]
 books = []
 try:
