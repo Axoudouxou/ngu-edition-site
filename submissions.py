@@ -105,8 +105,9 @@ def notify(row):
 
 
 def _client_ip():
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    return (forwarded.split(",")[0].strip() if forwarded else request.remote_addr) or ""
+    # la dernière valeur est celle ajoutée par le serveur web ; les précédentes sont écrites par le visiteur
+    parts = [p.strip() for p in request.headers.get("X-Forwarded-For", "").split(",") if p.strip()]
+    return (parts[-1] if parts else request.remote_addr) or ""
 
 
 def _ip_hash(ip):

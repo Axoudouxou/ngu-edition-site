@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auteur
+Disallow: /panier
+Disallow: /paiement-succes
+Disallow: /paiement-echec
+
+Sitemap: https://nguedition.com/sitemap.xml

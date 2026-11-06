@@ -688,3 +688,8 @@ def register_author_routes(app, get_db, require_admin):
         submissions.register(app, get_db, require_admin)
     except Exception as e:
         print(f"Module submissions non chargé : {e}")
+    try:
+        import catalog
+        catalog.register(app, get_db, require_admin)
+    except Exception as e:
+        print(f"Module catalog non chargé : {e}")

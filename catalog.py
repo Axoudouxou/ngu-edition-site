@@ -1,0 +1,190 @@
+"""Catalogue « sur commande » : les livres d'un éditeur partenaire, importés depuis un fichier Excel.
+
+- le prix d'achat (éditeur) n'est jamais renvoyé par l'API publique ;
+- un import peut ajouter, modifier et retirer des références ; un aperçu précède toujours l'application ;
+- branché par authors.py, comme les autres modules.
+"""
+import re
+import time
+
+from flask import jsonify, request
+
+MAX_ROWS = 5000
+MAX_BODY = 6 * 1024 * 1024
+CODE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,29}$")
+TEXT_FIELDS = ("catalogue", "rubrique", "sous_rubrique", "collection", "level", "audience", "approval", "also_in")
+COMPARED = ("title",) + TEXT_FIELDS + ("supplier_price", "price", "publisher")
+
+
+def init_tables(get_db):
+    conn = get_db()
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS catalog_items (
+            code TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            publisher TEXT NOT NULL DEFAULT '',
+            catalogue TEXT NOT NULL DEFAULT '',
+            rubrique TEXT NOT NULL DEFAULT '',
+            sous_rubrique TEXT NOT NULL DEFAULT '',
+            collection TEXT NOT NULL DEFAULT '',
+            level TEXT NOT NULL DEFAULT '',
+            audience TEXT NOT NULL DEFAULT '',
+            approval TEXT NOT NULL DEFAULT '',
+            also_in TEXT NOT NULL DEFAULT '',
+            supplier_price INTEGER NOT NULL DEFAULT 0,
+            price INTEGER NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1,
+            position INTEGER NOT NULL DEFAULT 0,
+            updated_at REAL NOT NULL
+        );
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+def _text(value, limit=200):
+    return re.sub(r"\s+", " ", str(value if value is not None else "")).strip()[:limit]
+
+
+def _int(value):
+    if value is None or value == "":
+        return None
+    try:
+        number = float(str(value).replace("\u202f", "").replace("\xa0", "").replace(" ", "").replace(",", "."))
+    except ValueError:
+        return None
+    return int(round(number))
+
+
+def clean_row(raw, publisher):
+    """(ligne propre, None) ou (None, motif du refus)."""
+    code = _text(raw.get("code"), 40)
+    if not CODE_RE.match(code):
+        return None, "code absent ou invalide"
+    title = _text(raw.get("title"))
+    if len(title) < 2:
+        return None, "titre absent"
+    price = _int(raw.get("price"))
+    if price is None or price <= 0 or price > 10_000_000:
+        return None, "prix de vente absent ou invalide"
+    supplier = _int(raw.get("supplier_price")) or 0
+    if supplier < 0 or supplier > 10_000_000:
+        return None, "prix d'achat invalide"
+    row = {"code": code, "title": title, "publisher": publisher, "price": price, "supplier_price": supplier}
+    for field in TEXT_FIELDS:
+        row[field] = _text(raw.get(field), 300 if field == "also_in" else 120)
+    return row, None
+
+
+def register(app, get_db, require_admin):
+    init_tables(get_db)
+
+    # ── Public : liste des références, sans le prix d'achat ───────────────────
+
+    @app.route("/api/catalog", methods=["GET"])
+    def ngu_public_catalog():
+        conn = get_db()
+        rows = conn.execute(
+            """SELECT code, title, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in, price
+               FROM catalog_items WHERE active = 1 ORDER BY position, rowid"""
+        ).fetchall()
+        conn.close()
+        resp = jsonify({"items": [dict(r) for r in rows]})
+        resp.headers["Cache-Control"] = "public, max-age=300"
+        return resp
+
+    # ── Admin ─────────────────────────────────────────────────────────────────
+
+    @app.route("/api/admin/v2/catalog", methods=["GET"])
+    @require_admin
+    def ngu_admin_catalog():
+        conn = get_db()
+        rows = conn.execute("SELECT * FROM catalog_items ORDER BY position, rowid").fetchall()
+        conn.close()
+        items = [dict(r) for r in rows]
+        for i in items:
+            i["active"] = bool(i["active"])
+        return jsonify({"items": items, "counts": {"total": len(items), "active": sum(1 for i in items if i["active"]), "hidden": sum(1 for i in items if not i["active"])}})
+
+    @app.route("/api/admin/v2/catalog/import", methods=["POST"])
+    @require_admin
+    def ngu_admin_catalog_import():
+        if request.content_length and request.content_length > MAX_BODY:
+            return jsonify({"error": "Fichier trop volumineux."}), 413
+        data = request.get_json(silent=True) or {}
+        rows_in = data.get("rows")
+        if not isinstance(rows_in, list) or not rows_in:
+            return jsonify({"error": "Aucune ligne à importer."}), 400
+        if len(rows_in) > MAX_ROWS:
+            return jsonify({"error": f"Trop de lignes ({len(rows_in)} ; maximum {MAX_ROWS})."}), 400
+        publisher = _text(data.get("publisher"), 80)
+        if not publisher:
+            return jsonify({"error": "Indiquez la maison d'édition."}), 400
+        replace = bool(data.get("replace"))
+        dry_run = bool(data.get("dry_run"))
+
+        good, invalid, seen = [], [], set()
+        for index, raw in enumerate(rows_in):
+            if not isinstance(raw, dict):
+                invalid.append({"row": index + 1, "reason": "ligne illisible"})
+                continue
+            row, reason = clean_row(raw, publisher)
+            if reason:
+                invalid.append({"row": raw.get("_row") or index + 1, "code": _text(raw.get("code"), 40), "reason": reason})
+            elif row["code"] in seen:
+                invalid.append({"row": raw.get("_row") or index + 1, "code": row["code"], "reason": "code déjà présent plus haut dans le fichier"})
+            else:
+                seen.add(row["code"])
+                good.append(row)
+        if not good:
+            return jsonify({"error": "Aucune ligne valide.", "invalid": invalid[:50]}), 400
+
+        conn = get_db()
+        existing = {r["code"]: dict(r) for r in conn.execute("SELECT * FROM catalog_items").fetchall()}
+        added = updated = unchanged = 0
+        for row in good:
+            old = existing.get(row["code"])
+            if old is None:
+                added += 1
+            elif any(old[f] != row[f] for f in COMPARED) or not old["active"]:
+                updated += 1
+            else:
+                unchanged += 1
+        removed_codes = [c for c, o in existing.items() if o["publisher"] == publisher and o["active"] and c not in seen] if replace else []
+        summary = {"added": added, "updated": updated, "unchanged": unchanged, "removed": len(removed_codes), "invalid": invalid[:50], "invalid_count": len(invalid), "total": len(good)}
+        if dry_run:
+            conn.close()
+            return jsonify({"dry_run": True, **summary})
+
+        now = time.time()
+        for position, row in enumerate(good):
+            conn.execute(
+                """INSERT INTO catalog_items (code, title, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in,
+                                              supplier_price, price, active, position, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                   ON CONFLICT(code) DO UPDATE SET title=excluded.title, publisher=excluded.publisher, catalogue=excluded.catalogue, rubrique=excluded.rubrique,
+                       sous_rubrique=excluded.sous_rubrique, collection=excluded.collection, level=excluded.level, audience=excluded.audience,
+                       approval=excluded.approval, also_in=excluded.also_in, supplier_price=excluded.supplier_price, price=excluded.price,
+                       active=1, position=excluded.position, updated_at=excluded.updated_at""",
+                (row["code"], row["title"], row["publisher"], row["catalogue"], row["rubrique"], row["sous_rubrique"], row["collection"], row["level"],
+                 row["audience"], row["approval"], row["also_in"], row["supplier_price"], row["price"], position, now),
+            )
+        for code in removed_codes:
+            conn.execute("UPDATE catalog_items SET active = 0, updated_at = ? WHERE code = ?", (now, code))
+        conn.commit()
+        conn.close()
+        return jsonify({"dry_run": False, **summary})
+
+    @app.route("/api/admin/v2/catalog/<code>/active", methods=["POST"])
+    @require_admin
+    def ngu_admin_catalog_active(code):
+        active = 1 if (request.get_json(silent=True) or {}).get("active") else 0
+        conn = get_db()
+        cur = conn.execute("UPDATE catalog_items SET active = ?, updated_at = ? WHERE code = ?", (active, time.time(), code))
+        conn.commit()
+        conn.close()
+        if cur.rowcount == 0:
+            return jsonify({"error": "référence introuvable"}), 404
+        return jsonify({"status": "ok"})

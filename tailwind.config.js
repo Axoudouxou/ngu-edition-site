@@ -4,7 +4,7 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   safelist: [
     'bg-primary', 'bg-accent', 'bg-secondary', 'bg-muted',
-    'text-primary', 'text-accent', 'text-secondary',
+    'text-primary', 'text-accent', 'text-accent-text', 'text-secondary',
     'border-primary', 'border-accent', 'border-secondary',
   ],
   theme: {
@@ -42,6 +42,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
+        'accent-text': 'hsl(var(--accent-text) / <alpha-value>)',
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',

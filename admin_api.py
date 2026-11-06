@@ -1,3 +1,7 @@
+import hashlib
+import hmac
+import os
+import re
 """Back-office NGU : commandes, indicateurs, rapports, stock, maisons partenaires, paramètres.
 
 Branché automatiquement par authors.py. Ne modifie ni la table des commandes (sauf
@@ -51,6 +55,12 @@ def init_tables(get_db):
             refunded_at REAL,
             note TEXT NOT NULL DEFAULT ''
         );
+        CREATE TABLE IF NOT EXISTS rate_hits (
+            bucket TEXT NOT NULL,
+            ip_hash TEXT NOT NULL,
+            t REAL NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_rate_hits ON rate_hits (bucket, ip_hash, t);
         CREATE TABLE IF NOT EXISTS order_payment (
             reference TEXT PRIMARY KEY,
             method TEXT NOT NULL DEFAULT ''
@@ -209,6 +219,26 @@ def _revenue_orders(orders):
 
 
 PAYMENT_METHODS = ("wave", "orange", "mtn", "moov", "djamo")
+EMAIL_RE = re.compile(r"^[^@\s]{1,100}@[^@\s]{1,100}\.[^@\s]{2,30}$")
+
+
+def client_ip():
+    """Adresse du visiteur. Derrière nginx, la dernière valeur de X-Forwarded-For est celle ajoutée par nginx :
+    les valeurs précédentes sont écrites par le visiteur et ne sont jamais crues."""
+    parts = [p.strip() for p in request.headers.get("X-Forwarded-For", "").split(",") if p.strip()]
+    return (parts[-1] if parts else request.remote_addr) or ""
+
+
+def rate_limited(conn, bucket, limit, window=3600):
+    """True si cette adresse a déjà fait `limit` tentatives dans la fenêtre ; sinon enregistre la tentative."""
+    ip = hmac.new(os.environ.get("SECRET_KEY", "").encode(), client_ip().encode(), hashlib.sha256).hexdigest()[:32]
+    now = time.time()
+    conn.execute("DELETE FROM rate_hits WHERE t < ?", (now - 86400,))
+    used = conn.execute("SELECT COUNT(*) FROM rate_hits WHERE bucket = ? AND ip_hash = ? AND t > ?", (bucket, ip, now - window)).fetchone()[0]
+    if used >= limit:
+        return True
+    conn.execute("INSERT INTO rate_hits (bucket, ip_hash, t) VALUES (?, ?, ?)", (bucket, ip, now))
+    return False
 
 
 def _expected_price(conn, book_id, format_id):
@@ -270,13 +300,29 @@ def register(app, get_db, require_admin):
         try:
             if request.method == "POST" and request.path == "/create-card-payment":
                 return jsonify({"error": "Le paiement par carte n'est pas disponible."}), 410
+            if request.method == "POST" and request.path == "/api/newsletter":
+                data = request.get_json(silent=True) or {}
+                if data.get("website"):                      # champ piège : un robot l'a rempli
+                    return jsonify({"status": "ok"})
+                if not EMAIL_RE.match(str(data.get("email") or "").strip()):
+                    return jsonify({"error": "Adresse email invalide."}), 400
+                conn = get_db()
+                blocked = rate_limited(conn, "newsletter", 15)
+                conn.commit()
+                conn.close()
+                if blocked:
+                    return jsonify({"error": "Trop de tentatives. Réessayez plus tard."}), 429
             if request.method == "POST" and request.path == "/create-payment":
                 data = request.get_json(silent=True) or {}
                 conn = get_db()
                 try:
-                    problem = check_price(conn, data)
+                    blocked = rate_limited(conn, "payment", 30)
+                    conn.commit()
+                    problem = None if blocked else check_price(conn, data)
                 finally:
                     conn.close()
+                if blocked:
+                    return jsonify({"error": "Trop de tentatives. Réessayez plus tard."}), 429
                 if problem:
                     return jsonify({"error": problem}), 400
                 ref = str(data.get("client_reference") or "").strip()
