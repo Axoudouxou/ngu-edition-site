@@ -127,6 +127,45 @@ function ImportPanel({ onDone }) {
   );
 }
 
+function VisibilityPanel({ settings, counts, onChanged }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const on = settings?.only_with_cover !== false;
+  const visible = on ? counts.with_cover : counts.active;
+
+  const toggle = async () => {
+    setBusy(true); setError('');
+    try {
+      await api('/api/admin/v2/catalog/settings', { method: 'POST', body: { only_with_cover: !on } });
+      onChanged();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel className="p-5 mb-8">
+      <ErrorNote>{error}</ErrorNote>
+      <div className="flex items-start gap-4">
+        <button type="button" role="switch" aria-checked={on} aria-label="Afficher seulement les livres avec couverture" disabled={busy} onClick={toggle}
+          className={`relative shrink-0 mt-0.5 w-11 h-6 rounded-full transition-colors ${on ? 'bg-[#20392D]' : 'bg-[#C9C5B8]'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : ''}`} />
+        </button>
+        <div>
+          <p className="font-medium">Afficher seulement les livres avec couverture</p>
+          <p className="text-sm text-[#6B7468] mt-1">
+            {visible} livre{visible > 1 ? 's' : ''} affiché{visible > 1 ? 's' : ''} sur le site. {on
+              ? 'Les autres restent enregistrés et apparaissent dès que leur couverture est ajoutée.'
+              : 'Tous les livres en ligne sont affichés, avec une couverture générée quand il manque la photo.'}
+          </p>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
 function CoversPanel({ onDone }) {
   const input = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -254,7 +293,7 @@ export default function OnOrder() {
   const [error, setError] = useState('');
 
   const items = state.data?.items || [];
-  const counts = state.data?.counts || { total: 0, active: 0, hidden: 0 };
+  const counts = state.data?.counts || { total: 0, active: 0, hidden: 0, with_cover: 0 };
   const query = norm(q).split(/\s+/).filter(Boolean);
   const list = items.filter((i) => {
     if (view === 'active' && !i.active) return false;
@@ -273,6 +312,7 @@ export default function OnOrder() {
     <Page title="Sur commande" subtitle="Le catalogue d'un éditeur partenaire. Ces livres ne s'achètent pas en ligne : le client envoie une demande sur WhatsApp depuis la page Catalogue du site.">
       <ImportPanel onDone={state.reload} />
       <CoversPanel onDone={state.reload} />
+      {state.data && <VisibilityPanel settings={state.data.settings} counts={counts} onChanged={state.reload} />}
       <ErrorNote>{state.error || error}</ErrorNote>
       <div className="flex flex-wrap items-center gap-4 mb-5">
         <Chips value={view} onChange={(v) => { setView(v); setShown(50); }} options={[
