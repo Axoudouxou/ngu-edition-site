@@ -5,8 +5,8 @@ BASE="https://raw.githubusercontent.com/Axoudouxou/ngu-edition-site/main"
 T=$(date +%s)
 APP=/opt/ngu-payment-server
 WEB=/var/www/nguedition
-JS="index-D6vFuyT3.js"
-CSS="index-DCRw5taS.css"
+JS="index-BTVMMaDm.js"
+CSS="index-DhPrH2_W.css"
 
 get() {   # $1 = chemin sur GitHub, $2 = destination
   curl -fsS -o "$2" "$BASE/$1?nocache=$T" || { echo "ÉCHEC : $1 est introuvable sur GitHub (les fichiers ont-ils été envoyés, puis « Commit » ?)"; exit 1; }
@@ -42,7 +42,7 @@ get server-index.html index.html
 get "$JS" "assets/$JS"
 get "$CSS" "assets/$CSS"
 for f in robots.txt site.webmanifest favicon.ico favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.jpg logo.jpg; do get "public/$f" "$f"; done
-for f in league-spartan-latin-{400,500,600,700}-normal.woff2 montserrat-latin-{300,400,500,600,700}-normal.woff2 montserrat-latin-400-italic.woff2; do get "public/fonts/$f" "fonts/$f"; done
+for f in league-spartan-latin-{400,500,600,700}-normal.woff2 montserrat-latin-{300,400,500,600,700}-normal.woff2 montserrat-latin-400-italic.woff2 cormorant-garamond-latin-{400,500,600}-normal.woff2 cormorant-garamond-latin-{400,500}-italic.woff2; do get "public/fonts/$f" "fonts/$f"; done
 grep -q "$JS" index.html || { echo "ÉCHEC : index.html ne correspond pas aux fichiers téléchargés."; exit 1; }
 echo "Site : OK"
 
