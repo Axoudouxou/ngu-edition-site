@@ -58,6 +58,7 @@ def init_tables(get_db):
         );
         """
     )
+    conn.execute("CREATE TABLE IF NOT EXISTS catalog_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
     have = {r["name"] for r in conn.execute("PRAGMA table_info(catalog_items)").fetchall()}
     if "author" not in have:
         conn.execute("ALTER TABLE catalog_items ADD COLUMN author TEXT NOT NULL DEFAULT ''")
@@ -101,6 +102,12 @@ def clean_row(raw, publisher):
     return row, None
 
 
+def only_with_cover(conn):
+    """Si activé (par défaut), le site n'affiche que les livres qui ont une couverture."""
+    row = conn.execute("SELECT value FROM catalog_settings WHERE key = 'only_with_cover'").fetchone()
+    return row is None or row["value"] != "0"
+
+
 def register(app, get_db, require_admin):
     init_tables(get_db)
 
@@ -111,7 +118,7 @@ def register(app, get_db, require_admin):
         conn = get_db()
         rows = conn.execute(
             """SELECT code, title, author, publisher, catalogue, rubrique, sous_rubrique, collection, level, audience, approval, also_in, price, cover
-               FROM catalog_items WHERE active = 1 ORDER BY position, rowid"""
+               FROM catalog_items WHERE active = 1""" + (" AND cover != ''" if only_with_cover(conn) else "") + """ ORDER BY position, rowid"""
         ).fetchall()
         conn.close()
         items = []
@@ -134,7 +141,23 @@ def register(app, get_db, require_admin):
         items = [dict(r) for r in rows]
         for i in items:
             i["active"] = bool(i["active"])
-        return jsonify({"items": items, "counts": {"total": len(items), "active": sum(1 for i in items if i["active"]), "hidden": sum(1 for i in items if not i["active"])}})
+        settings = {"only_with_cover": only_with_cover(get_db())}
+        return jsonify({"items": items, "settings": settings,
+                        "counts": {"total": len(items), "active": sum(1 for i in items if i["active"]), "hidden": sum(1 for i in items if not i["active"]),
+                                   "with_cover": sum(1 for i in items if i["active"] and i["cover"])}})
+
+    @app.route("/api/admin/v2/catalog/settings", methods=["POST"])
+    @require_admin
+    def ngu_admin_catalog_settings():
+        data = request.get_json(silent=True) or {}
+        if "only_with_cover" not in data:
+            return jsonify({"error": "réglage inconnu"}), 400
+        conn = get_db()
+        conn.execute("INSERT INTO catalog_settings (key, value) VALUES ('only_with_cover', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                     ("1" if data["only_with_cover"] else "0",))
+        conn.commit()
+        conn.close()
+        return jsonify({"status": "ok", "only_with_cover": bool(data["only_with_cover"])})
 
     @app.route("/api/admin/v2/catalog/import", methods=["POST"])
     @require_admin

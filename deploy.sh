@@ -5,8 +5,8 @@ BASE="https://raw.githubusercontent.com/Axoudouxou/ngu-edition-site/main"
 T=$(date +%s)
 APP=/opt/ngu-payment-server
 WEB=/var/www/nguedition
-JS="index-ma1Bxrvu.js"
-CSS="index-BuXPdXal.css"
+JS="index-C58UUWnP.js"
+CSS="index-bhjPuFEI.css"
 
 get() {   # $1 = chemin sur GitHub, $2 = destination
   curl -fsS -o "$2" "$BASE/$1?nocache=$T" || { echo "ÉCHEC : $1 est introuvable sur GitHub (les fichiers ont-ils été envoyés, puis « Commit » ?)"; exit 1; }
