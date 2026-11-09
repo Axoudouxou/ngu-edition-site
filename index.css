@@ -127,3 +127,13 @@
     letter-spacing: -0.01em;
   }
 }
+
+/* Mode édition directe (administrateur connecté) */
+.ngu-edit-on [contenteditable="true"].ngu-editable {
+  outline: 1px dashed rgba(138, 106, 42, 0.7);
+  outline-offset: 3px;
+  border-radius: 2px;
+  cursor: text;
+}
+.ngu-edit-on [contenteditable="true"].ngu-editable:hover { background: rgba(212, 175, 55, 0.12); }
+.ngu-edit-on [contenteditable="true"].ngu-editable:focus { outline: 2px solid #8a6a2a; background: rgba(212, 175, 55, 0.16); }

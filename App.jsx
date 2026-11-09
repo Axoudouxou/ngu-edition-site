@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { CartProvider } from '@/lib/CartContext';
+import { EditModeProvider } from '@/lib/editMode';
 import { PageMeta } from '@/lib/pageMeta';
 
 import MainLayout from '@/components/layout/MainLayout';
@@ -45,6 +46,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <CartProvider>
+        <EditModeProvider>
         <Router>
           <PageMeta />
           <Routes>
@@ -89,6 +91,7 @@ function App() {
           </Routes>
         </Router>
         <Toaster />
+      </EditModeProvider>
       </CartProvider>
     </QueryClientProvider>
   )
